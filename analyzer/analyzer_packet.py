@@ -1,8 +1,8 @@
 import json
 
-# Packet class, container for different packet information. For now only contains ip and tcp/udp information.
+# Packet Data class, container for different packet information. For now only contains ip and tcp/udp information.
 # very open to changing implementation of class.
-class Packet:
+class PacketData:
     NETWORK_LAYER_PROTOCOLS = ["ipv4", "ipv6"]
     TRANSPORT_LAYER_PROTOCOLS = ["tcp", "udp"]
     APPLICATION_LAYER_PROTOCOLS = ["dns", "http"]
@@ -37,7 +37,7 @@ class Packet:
                 raise Exception("No IPv6 source address specified.")
             self.protocols.append("ipv6")
 
-        transport_protocols_args = [arg_name for arg_name in kwargs if arg_name in Packet.TRANSPORT_LAYER_PROTOCOLS]
+        transport_protocols_args = [arg_name for arg_name in kwargs if arg_name in PacketData.TRANSPORT_LAYER_PROTOCOLS]
         if len(transport_protocols_args) > 1:
             raise Exception("Multiple Transport Layer Protocols used: {}.".format(", ".join(transport_protocols_args)))
 

@@ -25,7 +25,7 @@ def packets_from_JSON(filename):
         elif "udp" in layers:
             kwargs["udp"] = dict(dst_port=layers["udp"]["udp.dstport"], src_port=layers["udp"]["udp.srcport"])
 
-        packet = analyzer_packet.Packet(**kwargs)
+        packet = analyzer_packet.PacketData(**kwargs)
         packets.append(packet)
 
     packets_file.close()
