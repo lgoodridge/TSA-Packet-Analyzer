@@ -1,2 +1,3 @@
 # ignore Pycharm IDE related folder
 .idea
+.pyc
