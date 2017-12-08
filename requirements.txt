@@ -1,0 +1,1 @@
+# Requirements file for dependencies. Can be used in conjunction with pip and virtualenv.
