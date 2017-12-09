@@ -1,5 +1,7 @@
 import json
-import analyzer_packet
+from wireshark_packet import WiresharkPacket
+from pof_packet import POFPacket
+
 
 # Extract packets wireshark json dump. Return an array of packet objects.
 def packets_from_JSON(filename):
@@ -25,12 +27,13 @@ def packets_from_JSON(filename):
         elif "udp" in layers:
             kwargs["udp"] = dict(dst_port=layers["udp"]["udp.dstport"], src_port=layers["udp"]["udp.srcport"])
 
-        packet = analyzer_packet.PacketData(**kwargs)
+        packet = WiresharkPacket(**kwargs)
         packets.append(packet)
 
     packets_file.close()
 
     return packets
+
 
 # Test packets_from_JSON, asks for the file name to parse packets from and print out the first 20 packets parsed.
 if __name__ == "__main__":
@@ -38,10 +41,4 @@ if __name__ == "__main__":
     packets = packets_from_JSON(file_name)
 
     for i in range(min(20, len(packets))):
-        print packets[i]
-
-
-
-
-
-
+        print(packets[i])
