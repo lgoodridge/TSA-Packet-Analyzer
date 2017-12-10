@@ -15,6 +15,7 @@ def check_settings_file():
     See if settings file was updated since the last time
     it was read, and update the config parser if so.
     """
+    global last_read_time
     last_modified_time = os.path.getmtime(SETTINGS_FILE)
     if last_modified_time > last_read_time:
         config.read(SETTINGS_FILE)

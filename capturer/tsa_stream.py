@@ -1,4 +1,4 @@
-from tsa_packet import TSA_Packet
+from capturer.tsa_packet import TSA_Packet
 
 class TSA_Stream:
     """

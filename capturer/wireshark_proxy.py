@@ -5,8 +5,8 @@ This module should be initialized via either of the init methods
 before its other methods are used.
 """
 
-from tsa_packet import TSA_Packet
-from tsa_stream import TSA_Stream
+from capturer.tsa_packet import TSA_Packet
+from capturer.tsa_stream import TSA_Stream
 
 import pyshark
 
