@@ -6,10 +6,16 @@ idna==2.6
 ipython-genutils==0.2.0
 jsonschema==2.6.0
 jupyter-core==4.4.0
+Logbook==1.1.0
+lxml==4.1.1
 nbformat==4.4.0
+p0f==1.0.0
 plotly==2.2.3
+py==1.4.34
+pyshark==0.3.7.11
 pytz==2017.3
 requests==2.18.4
 six==1.11.0
 traitlets==4.3.2
+trollius==1.0.4
 urllib3==1.22

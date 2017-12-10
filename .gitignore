@@ -1,5 +1,14 @@
-# ignore Pycharm IDE related folder
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Pycharm IDE files
 .idea
 
-*.pyc
+# Temp Files
+.*.sw*
 *~
+
+# Other files
+.DS_Store
+notes/
