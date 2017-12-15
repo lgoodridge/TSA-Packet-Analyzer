@@ -1,16 +1,17 @@
 import pyshark
 
-class TSA_Packet:
+class TSAPacket(dict):
     """
     Condensed representation of a packet containing only the fields
     necessary for our analyzer.
 
-    Packet fields are represented as attributes, and may be accessed
-    directly (e.g. tsa_packet.src_addr). Some fields only appear
-    in certain packets, and will have a value of None if it was not
-    present.
+    This class subclasses dict, and thus any operators on dictionaries
+    will also work on a TSAPacket. Packet fields may be accessed
+    through dictionary syntax (e.g. tsa_packet['src_addr']), or with
+    dot syntax (e.g. tsa_packet.src_addr). Some fields only appear in
+    certain packets, and will have a value of None if it was not present.
 
-    A TSA_Packet may either be initialized directly, with a dictionary
+    A TSAPacket may either be initialized directly, with a dictionary
     containing the expected packet values, or via one of the defined
     parse methods.
 
@@ -32,22 +33,70 @@ class TSA_Packet:
         http_status:  response status code (if HTTP response)
     """
 
+    FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr', 'protocol',
+              'src_port', 'dst_port', 'tcp_op', 'application_type',
+              'arp_src_ip', 'arp_dst_ip', 'dns_query_names', 'http_req_resp',
+              'http_method', 'http_status']
+
+    REQUIRED_FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr',
+                       'protocol', 'src_port', 'dstport', 'application_type']
+
     def __init__(self, init_data):
-        raise NotImplementedError()
+        for field in TSAPacket.FIELDS:
+            if field in init_data:
+                self[field] = init_data[field]
+            elif field in TSAPacket.REQUIRED_FIELDS:
+                raise IncompleteInitDataException("Missing required" +
+                        "field: %s." % field)
+            else:
+                self[field] = None
 
     def __repr__(self):
-        raise NotImplementedError()
+        field_list = []
+        for field in TSAPacket.FIELDS:
+            field_value = self[field]
+            if field_value:
+                field_list.append("\t%s: %s" % (field, self[field]))
+        return "TSA Packet: {\n%s\n}" % "\n".join(field_list)
+
+    ### METHODS TO ALLOW OBJECT DOT SYNTAX ###
+
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        else:
+            raise AttributeError("No such attribute: " + name)
+
+    def __setattr__(self, name, value):
+        self[name] = value
+
+    def __delattr__(self, name):
+        if name in TSAPacket.REQUIRED_FIELDS:
+            raise AttributeError("Attempted to delete required field: " + name)
+        elif name in TSAPacket.FIELDS:
+            self[name] = None
+        elif name in self:
+            del self[name]
+        else:
+            raise AttributeError("No such attribute: " + name)
+
+    ### PARSING METHODS ###
 
     @classmethod
     def parse_pyshark_packet(cls, pyshark_packet):
         """
-        Accepts a pyshark Packet object, and returns a TSA_Packet
+        Accepts a pyshark Packet object, and returns a TSAPacket
         created from it.
-        Raises TSA_Packet_Parse_Exception if parsing fails.
+
+        Raises TSAPacketParseException if parsing fails.
         """
         raise NotImplementedError()
 
 
-class TSA_Packet_Parse_Exception(Exception):
+class IncompleteInitDataException(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
+class TSAPacketParseException(Exception):
     def __init__(self, message, e):
         Exception.__init__(self, message, e)

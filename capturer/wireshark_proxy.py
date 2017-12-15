@@ -5,8 +5,8 @@ This module should be initialized via either of the init methods
 before its other methods are used.
 """
 
-from capturer.tsa_packet import TSA_Packet
-from capturer.tsa_stream import TSA_Stream
+from capturer.tsa_packet import TSAPacket
+from capturer.tsa_stream import TSAStream
 
 import pyshark
 
@@ -32,8 +32,9 @@ def init_live_capture():
 def read_packets(num_packets=None):
     """
     Reads num_packets packets from the tail of the capture, and
-    returns them as a TSA_Stream. Packets that fail to parse are
+    returns them as a TSAStream. Packets that fail to parse are
     silently dropped from the returned stream.
+
     If num_packets is None, attempts to read all captured packets.
     """
     raise NotImplementedError()
