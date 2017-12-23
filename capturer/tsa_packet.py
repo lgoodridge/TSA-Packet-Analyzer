@@ -1,4 +1,5 @@
-import pyshark
+from capturer.utils import split_cdl
+from datetime import datetime
 
 class TSAPacket(dict):
     """
@@ -24,9 +25,8 @@ class TSAPacket(dict):
         src_port:  source TCP/UDP port (required)
         dst_port:  destination TCP/UDP port (required)
         tcp_op:  'SYN' | 'ACK' | 'SYN-ACK' (if TCP packet)
-        application_type:  'arp' | 'dns' | 'http' | 'none' (required)
-        arp_src_ip:  ARP source IP address (if ARP packet)
-        arp_dst_ip:  ARP destination IP address (if ARP packet)
+        application_type: 'dns' | 'http' | 'none' (required)
+        dns_query_resp: 'query' | 'response' (if DNS packet)
         dns_query_names:  List of URLs being queried (if DNS packet)
         http_req_resp:  'request' | 'response' (if HTTP packet)
         http_method:  'GET' | 'PUT' | 'POST' | ... (if HTTP request)
@@ -35,18 +35,24 @@ class TSAPacket(dict):
 
     FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr', 'protocol',
               'src_port', 'dst_port', 'tcp_op', 'application_type',
-              'arp_src_ip', 'arp_dst_ip', 'dns_query_names', 'http_req_resp',
+              'dns_query_resp', 'dns_query_names', 'http_req_resp',
               'http_method', 'http_status']
 
     REQUIRED_FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr',
-                       'protocol', 'src_port', 'dstport', 'application_type']
+                       'protocol', 'src_port', 'dst_port', 'application_type']
 
     def __init__(self, init_data):
+        """
+        Initializes a TSAPacket from a python dictionary.
+
+        Raises IncompleteInitDataException if any required fields are
+        missing in the provided dictionary.
+        """
         for field in TSAPacket.FIELDS:
             if field in init_data:
                 self[field] = init_data[field]
             elif field in TSAPacket.REQUIRED_FIELDS:
-                raise IncompleteInitDataException("Missing required" +
+                raise IncompleteInitDataException("Missing required " +
                         "field: %s." % field)
             else:
                 self[field] = None
@@ -82,15 +88,88 @@ class TSAPacket(dict):
 
     ### PARSING METHODS ###
 
-    @classmethod
-    def parse_pyshark_packet(cls, pyshark_packet):
+    @staticmethod
+    def parse_pyshark_packet(packet):
         """
         Accepts a pyshark Packet object, and returns a TSAPacket
         created from it.
 
         Raises TSAPacketParseException if parsing fails.
         """
-        raise NotImplementedError()
+        if not packet.__dict__.get('layers'):
+            raise TSAPacketParseException("Provided packet is not in " +
+                    "expected pyshark packet format.")
+        if packet.captured_length != packet.length:
+            raise TSAPacketParseException("Failed to capture entire packet")
+
+        init_data = {}
+        sniff_time_float = float(packet.sniff_timestamp)
+        init_data['timestamp'] = datetime.fromtimestamp(sniff_time_float)
+
+        # Extract network layer data
+        if 'ip' in packet:
+            init_data['ip_version'] = "ipv" + str(packet.ip.version)
+            init_data['src_addr'] = packet.ip.src
+            init_data['dst_addr'] = packet.ip.dst
+        else:
+            raise TSAPacketParseException("Packet missing required IP layer")
+
+        # Extract transport layer data
+        if 'tcp' in packet:
+            init_data['protocol'] = "tcp"
+            init_data['src_port'] = int(packet.tcp.srcport)
+            init_data['dst_port'] = int(packet.tcp.dstport)
+
+            is_syn = bool(int(packet.tcp.flags_syn))
+            is_ack = bool(int(packet.tcp.flags_ack))
+            if is_syn and is_ack:
+                init_data['tcp_op'] = "SYN-ACK"
+            elif is_syn:
+                init_data['tcp_op'] = "SYN"
+            elif is_ack:
+                init_data['tcp_op'] = "ACK"
+            else:
+                raise TSAPacketParseException("TCP Packet was neither a SYN, " +
+                        "ACK, nor SYN-ACK operation")
+
+        elif 'udp' in packet:
+            init_data['protocol'] = "udp"
+            init_data['src_port'] = int(packet.udp.srcport)
+            init_data['dst_port'] = int(packet.udp.dstport)
+
+        else:
+            raise TSAPacketParseException("Packet missing transport layer " +
+                    "(TCP or UDP)")
+
+        # Extract application layer data (if any)
+        if 'dns' in packet:
+            init_data['application_type'] = "dns"
+            if 'qry_name' in packet.dns.field_names:
+                init_data['dns_query_names'] = split_cdl(packet.dns.qry_name)
+            else:
+                raise TSAPacketParseException("DNS Packet missing query " +
+                        "names field")
+            if 'resp_name' in packet.dns.field_names:
+                init_data['dns_query_resp'] = "response"
+            else:
+                init_data['dns_query_resp'] = "query"
+
+        elif 'http' in packet:
+            init_data['application_type'] = "http"
+            if 'request_method' in packet.http.field_names:
+                init_data['http_req_resp'] = "request"
+                init_data['http_method'] = packet.http.request_method
+            elif 'response_code' in packet.http.field_names:
+                init_data['http_req_resp'] = "response"
+                init_data["http_status"] = int(packet.http.response_code)
+            else:
+                raise TSAPacketParseException("HTTP Packet contained neither " +
+                        "request nor response data")
+
+        else:
+            init_data['application_type'] = "none"
+
+        return TSAPacket(init_data)
 
 
 class IncompleteInitDataException(Exception):
@@ -98,5 +177,5 @@ class IncompleteInitDataException(Exception):
         Exception.__init__(self, message)
 
 class TSAPacketParseException(Exception):
-    def __init__(self, message, e):
-        Exception.__init__(self, message, e)
+    def __init__(self, message):
+        Exception.__init__(self, message)
