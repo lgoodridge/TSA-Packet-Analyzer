@@ -98,7 +98,7 @@ class TSAPacket(dict):
         """
         if not packet.__dict__.get('layers'):
             raise TSAPacketParseException("Provided packet is not in " +
-                    "expected pyshark packet format.")
+                    "expected pyshark packet format")
         if packet.captured_length != packet.length:
             raise TSAPacketParseException("Failed to capture entire packet")
 
