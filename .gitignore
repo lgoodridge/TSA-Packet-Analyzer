@@ -12,3 +12,4 @@ __pycache__/
 # Other files
 .DS_Store
 notes/
+tests/
