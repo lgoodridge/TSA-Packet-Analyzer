@@ -3,6 +3,7 @@ Defines the entry point for the application.
 """
 
 from capturer import p0f_proxy, wireshark_proxy
+from analyzer import tsa_statistics
 from settings import get_setting
 from sys import argv, exit
 
@@ -19,6 +20,13 @@ if __name__ == "__main__":
         wireshark_proxy.init_from_file(ws_init_filepath)
         print(wireshark_proxy.read_packets())
         p0f_proxy.init_from_file(p0f_init_filepath)
+
+    # Test analyzer. Analyzer module Will be used by visualizer.
+    country_counts = tsa_statistics.get_country_counts(wireshark_proxy.read_packets().get_packets())
+    print("\n")
+    for country, count in country_counts.items():
+        print("Country: {}, Count: {}\n".format(country, count))
+
 
     # TODO: Start up visualizer
 
