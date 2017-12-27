@@ -27,10 +27,15 @@ cd TSA-Packet-Analyzer
 pip install -r requirements.txt
 ```
 
+Download the ```GeoLite2 Country``` Database for IP Geolocation from:
+https://dev.maxmind.com/geoip/geoip2/geolite2/
+
+
 Finally, you will need to update the ```settings.ini``` file to match the setup of your system. In particular, make sure that:
  * p0f: DatabaseFilePath points to your ```pof.fp``` file (or you've symbolic linked it to a location in your PATH, and the setting is left as 'default')
  * CaptureInterface is set to the network interface to capture packets on if UseLiveCapture is set.
  *  InitFileLocation is set a ```.pcap``` file to read from if UseLiveCapture is not set
+ *  DatabaseFilePath is set to a ```.mmdb``` database file to enable IP Geolocation.
 
 ## Project Structure
 
@@ -47,3 +52,6 @@ Responsible for aggregating the packet data, interpreting it, and converting it 
 #### visualizer:
 
 Responsible for displaying the data outputted by the analyzer in a clean, and intuitive manner. This layer performs some minimal pre-processing, then displays the data in a Plotly dashboard.
+
+This product includes GeoLite2 data created by MaxMind, available from
+<a href="http://www.maxmind.com">http://www.maxmind.com</a>.
