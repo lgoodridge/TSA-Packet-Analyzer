@@ -13,7 +13,8 @@ def get_country_from_ip_geoipDB(ip_addr):
     try:
         name = GEOIP_DB_READER.country(ip_addr).country.name
     except geoip2.errors.AddressNotFoundError:
-        print("IP Address {} not found\n".format(ip_addr))
+        #TODO: maybe make this a log?
+        print("INFO: IP Address {} not found\n".format(ip_addr))
 
     return name
 

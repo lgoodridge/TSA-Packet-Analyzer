@@ -27,6 +27,7 @@ class TSAPacket(dict):
         tcp_op:  'SYN' | 'ACK' | 'SYN-ACK' (if TCP packet)
         application_type: 'dns' | 'http' | 'none' (required)
         dns_query_resp: 'query' | 'response' (if DNS packet)
+        dns_query_resp_ip: response ip address (if DNS response packet)
         dns_query_names:  List of URLs being queried (if DNS packet)
         http_req_resp:  'request' | 'response' (if HTTP packet)
         http_method:  'GET' | 'PUT' | 'POST' | ... (if HTTP request)
@@ -35,8 +36,8 @@ class TSAPacket(dict):
 
     FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr', 'protocol',
               'src_port', 'dst_port', 'tcp_op', 'application_type',
-              'dns_query_resp', 'dns_query_names', 'http_req_resp',
-              'http_method', 'http_status']
+              'dns_query_resp', 'dns_query_resp_ip', 'dns_query_names',
+              'http_req_resp', 'http_method', 'http_status']
 
     REQUIRED_FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr',
                        'protocol', 'src_port', 'dst_port', 'application_type']
@@ -151,6 +152,7 @@ class TSAPacket(dict):
                         "names field")
             if 'resp_name' in packet.dns.field_names:
                 init_data['dns_query_resp'] = "response"
+                init_data['dns_query_resp_ip'] = packet.dns.a
             else:
                 init_data['dns_query_resp'] = "query"
 

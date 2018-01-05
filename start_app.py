@@ -27,6 +27,10 @@ if __name__ == "__main__":
     for country, count in country_counts.items():
         print("Country: {}, Count: {}\n".format(country, count))
 
+    fqdn_counts = tsa_statistics.get_fqdn_counts(wireshark_proxy.read_packets().get_packets())
+    print("\n")
+    for fqdn, count in fqdn_counts.items():
+        print("Domain Name: {}, Count: {}\n".format(fqdn, count))
 
     # TODO: Start up visualizer
 
