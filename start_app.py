@@ -19,7 +19,7 @@ if __name__ == "__main__":
         p0f_init_filepath = get_setting('p0f', 'InitFileLocation')
         wireshark_proxy.init_from_file(ws_init_filepath)
         print(wireshark_proxy.read_packets())
-        p0f_proxy.init_from_file(p0f_init_filepath)
+        # p0f_proxy.init_from_file(p0f_init_filepath)
 
     # Test analyzer. Analyzer module Will be used by visualizer.
     country_counts = tsa_statistics.get_country_counts(wireshark_proxy.read_packets().get_packets())

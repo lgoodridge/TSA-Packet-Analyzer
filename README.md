@@ -10,6 +10,13 @@ At this time, Windows is not supported (sorry).
 
 ### Mac OS X / Linux
 
+Note: if you do not have ```wget``` you can use ```curl -O``` for downloads.
+
+(Ubuntu) Install libpcap if necessary:
+```
+sudo apt-get install libpcap-dev
+```
+
 Download and compile the ```p0f3``` tool:
 ```
 wget http://lcamtuf.coredump.cx/p0f3/releases/p0f-3.09b.tgz
@@ -17,13 +24,14 @@ tar -xzvf p0f-3.09b.tgz
 cd p0f-3.09b
 make
 ```
-Note: if you do not have ```wget``` you can use ```curl``` with the ```-O``` option to download the ```p0f3``` tool.
-
-```
-curl -O http://lcamtuf.coredump.cx/p0f3/releases/p0f-3.09b.tgz
-```
 
 ### All Platforms
+
+Download the ```GeoLite2 Country``` Database
+```
+wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
+tar -xzvf GeoLite2-Country.tar.gz
+```
 
 Clone this repository, and install the remaining dependencies:
 ```
@@ -32,15 +40,11 @@ cd TSA-Packet-Analyzer
 pip install -r requirements.txt
 ```
 
-Download the ```GeoLite2 Country``` Database for IP Geolocation from:
-https://dev.maxmind.com/geoip/geoip2/geolite2/
-
-
 Finally, you will need to update the ```settings.ini``` file to match the setup of your system. In particular, make sure that:
- * p0f: DatabaseFilePath points to your ```pof.fp``` file (or you've symbolic linked it to a location in your PATH, and the setting is left as 'default')
+ * geoip2: DatabaseFilePath is set to your ```.mmdb``` file in the GeoLite2-Country directory.
+ * p0f: DatabaseFilePath points to your ```pof.fp``` file in the p0f directory (or you've symbolic linked it to a location in your PATH, and the setting is left as 'default')
  * CaptureInterface is set to the network interface to capture packets on if UseLiveCapture is set.
- *  InitFileLocation is set a ```.pcap``` file to read from if UseLiveCapture is not set
- *  DatabaseFilePath is set to a ```.mmdb``` database file to enable IP Geolocation.
+ *  InitFileLocation is set a ```.pcap``` file to read from if UseLiveCapture is not set.
 
 ## Project Structure
 
