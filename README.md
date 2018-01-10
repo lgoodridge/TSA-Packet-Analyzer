@@ -17,6 +17,11 @@ tar -xzvf p0f-3.09b.tgz
 cd p0f-3.09b
 make
 ```
+Note: if you do not have ```wget``` you can use ```curl``` with the ```-O``` option to download the ```p0f3``` tool.
+
+```
+curl -O http://lcamtuf.coredump.cx/p0f3/releases/p0f-3.09b.tgz
+```
 
 ### All Platforms
 

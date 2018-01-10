@@ -38,7 +38,10 @@ def get_country_counts(packets):
         country_name = get_country_from_ip_geoipDB(ip)
 
         if country_name:
-            country_counts[country_name] = count
+            if country_name in country_counts:
+                country_counts[country_name] += count
+            else:
+                country_counts[country_name] = count
         else:
             country_counts[unknown] += 1
 
