@@ -2,10 +2,13 @@
 __pycache__/
 *.py[cod]
 
-# Pycharm IDE files
-.idea
+# Raw data files
+*.pcap
 
-# Temp Files
+# Pycharm IDE files
+*.idea
+
+# Temp files
 .*.sw*
 *~
 

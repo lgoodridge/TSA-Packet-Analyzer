@@ -12,7 +12,7 @@ At this time, Windows is not supported (sorry).
 
 Note: if you do not have ```wget``` you can use ```curl -O``` for downloads.
 
-(Ubuntu) Install libpcap if necessary:
+(Linux) Install libpcap development libraries using your system's package manager. For example, on Ubuntu:
 ```
 sudo apt-get install libpcap-dev
 ```
@@ -23,6 +23,7 @@ wget http://lcamtuf.coredump.cx/p0f3/releases/p0f-3.09b.tgz
 tar -xzvf p0f-3.09b.tgz
 cd p0f-3.09b
 make
+sudo ln -s "($pwd)/p0f /usr/local/bin/p0f
 ```
 
 ### All Platforms
@@ -41,10 +42,14 @@ pip install -r requirements.txt
 ```
 
 Finally, you will need to update the ```settings.ini``` file to match the setup of your system. In particular, make sure that:
- * geoip2: DatabaseFilePath is set to your ```.mmdb``` file in the GeoLite2-Country directory.
- * p0f: DatabaseFilePath points to your ```pof.fp``` file in the p0f directory (or you've symbolic linked it to a location in your PATH, and the setting is left as 'default')
- * CaptureInterface is set to the network interface to capture packets on if UseLiveCapture is set.
- *  InitFileLocation is set a ```.pcap``` file to read from if UseLiveCapture is not set.
+ * app: UseLiveCapture is set to "yes" or "no", depending on whether you want to analyze a live capture of packets, or statically analyze a previously captured .pcap file.
+ * app: CaptureInterface is set to the network interface to capture packets on if UseLiveCapture is set to "yes".
+ * app: InitFileLocation is set to a ```.pcap``` file to read from if UseLiveCapture is set to "no".
+
+The defaults provided for the remainder of the settings file should work without further adjustment, but you may change them if you wish:
+ * geoip2: DatabaseFilePath should point to the ```.mmdb``` file provided by the GeoLite2-Country database.
+ * p0f: DatabaseFilePath should point to the ```pof.fp``` file provided by the p0f tool.
+ * p0f: APISocketFilePath should point to a location that can be used for socket communication (the app will create the socket file at that location if it doesn't already exist).
 
 ## Project Structure
 
@@ -62,5 +67,8 @@ Responsible for aggregating the packet data, interpreting it, and converting it 
 
 Responsible for displaying the data outputted by the analyzer in a clean, and intuitive manner. This layer performs some minimal pre-processing, then displays the data in a Plotly dashboard.
 
+## Acknowledgements
+
 This product includes GeoLite2 data created by MaxMind, available from
 <a href="http://www.maxmind.com">http://www.maxmind.com</a>.
+a href="http://www.maxmind.com">http://www.maxmind.com</a>.

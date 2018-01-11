@@ -15,8 +15,8 @@ if __name__ == "__main__":
         wireshark_proxy.init_live_capture()
         p0f_proxy.init_live_capture()
     else:
-        ws_init_filepath = get_setting('wireshark', 'InitFileLocation')
-        p0f_init_filepath = get_setting('p0f', 'InitFileLocation')
+        ws_init_filepath = get_setting('app', 'InitFileLocation')
+        p0f_init_filepath = get_setting('app', 'InitFileLocation')
         wireshark_proxy.init_from_file(ws_init_filepath)
         print(wireshark_proxy.read_packets())
         # p0f_proxy.init_from_file(p0f_init_filepath)
