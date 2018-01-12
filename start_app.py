@@ -6,20 +6,26 @@ from capturer import p0f_proxy, wireshark_proxy
 from analyzer import tsa_statistics
 from settings import get_setting
 from sys import argv, exit
+from time import sleep
 
 if __name__ == "__main__":
 
     # Initialize the capturer layer
     use_live_capture = get_setting('app', 'UseLiveCapture', 'bool')
     if use_live_capture:
-        wireshark_proxy.init_live_capture()
-        p0f_proxy.init_live_capture()
+        capture_interface = get_setting('app', 'CaptureInterface')
+        wireshark_proxy.init_live_capture(capture_interface)
+        # p0f_proxy.init_live_capture()
+        print("Capturing initial packets...")
+        sleep(10)
+        print("Done!")
     else:
-        ws_init_filepath = get_setting('app', 'InitFileLocation')
-        p0f_init_filepath = get_setting('app', 'InitFileLocation')
-        wireshark_proxy.init_from_file(ws_init_filepath)
-        print(wireshark_proxy.read_packets())
-        # p0f_proxy.init_from_file(p0f_init_filepath)
+        init_filepath = get_setting('app', 'InitFileLocation')
+        wireshark_proxy.init_from_file(init_filepath)
+        p0f_proxy.init_from_file(init_filepath)
+
+    print("Capturer layer initialized.")
+    print(wireshark_proxy.read_packets())
 
     # Test analyzer. Analyzer module Will be used by visualizer.
     country_counts = tsa_statistics.get_country_counts(wireshark_proxy.read_packets().get_packets())
@@ -34,5 +40,5 @@ if __name__ == "__main__":
 
     # TODO: Start up visualizer
 
-    print("Well, here you go.\nHope it gets interesting soon...\n")
+    print("Finished!")
     exit(0)
