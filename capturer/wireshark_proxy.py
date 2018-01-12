@@ -7,7 +7,6 @@ before its other methods are used.
 
 from capturer.tsa_packet import TSAPacket, TSAPacketParseException
 from capturer.tsa_stream import TSAStream
-from settings import get_setting
 
 import collections
 import pyshark
@@ -74,6 +73,19 @@ def init_live_capture(cap_interface):
     background_thread = threading.Thread(target=capture_packets)
     background_thread.start()
 
+def cleanup():
+    """
+    Stops any background processes / threads and
+    returns the module to its uninitialized state.
+    """
+    global pyshark_capture, packet_deque, background_thread
+    if pyshark_capture:
+        pyshark_capture = None
+    if packet_deque:
+        packet_deque.clear()
+    if background_thread:
+        background_thread = None
+
 def read_packets(num_packets=None):
     """
     Reads num_packets packets from the tail of the capture, and
@@ -82,6 +94,7 @@ def read_packets(num_packets=None):
 
     If num_packets is None, attempts to read all captured packets.
     """
+    global pyshark_capture, packet_deque
     if pyshark_capture is None:
         raise RuntimeError("Wireshark Proxy has not been initialized")
 
