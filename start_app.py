@@ -29,10 +29,10 @@ if __name__ == "__main__":
     tsa_stream = wireshark_proxy.read_packets()
     tsa_packets = tsa_stream.get_packets()
 
-    print("Captured stream:")
+    print("\nCaptured stream:")
     print(tsa_stream)
 
-    print("Captured security info:")
+    print("\nCaptured security info:")
     if len(tsa_packets) > 1:
         print(p0f_proxy.get_security_info(tsa_packets[0].dst_addr))
         print(p0f_proxy.get_security_info(tsa_packets[-1].dst_addr))

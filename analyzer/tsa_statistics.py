@@ -16,7 +16,6 @@ def get_country_counts(packets):
         A dictionary where the keys are names of countries and the values are the number of packets
         from / to that country.
     """
-
     unknown = 'Unknown'
 
     #TODO: get_host_ip_addr might be inappropriate when analyzing a network's traffic instead of a host's traffic
@@ -45,7 +44,6 @@ def get_country_counts(packets):
         else:
             country_counts[unknown] += 1
 
-
     return country_counts
 
 def get_fqdn_counts(packets):
@@ -59,13 +57,9 @@ def get_fqdn_counts(packets):
         A dictionary where the keys are FQDNs and the values are the number of packets from / to that FQDN
         from / to that country.
     """
-
-    unkown = 'Unknown'
-
+    unknown = 'Unknown'
     host_ip_addr = get_host_ip_addr(packets)
-
     ip_counts = {}
-
     ip_to_fqdns = {}
 
     for packet in packets:
@@ -76,8 +70,8 @@ def get_fqdn_counts(packets):
         ip_counts[dst] = ip_counts[dst] + 1 if dst in ip_counts else 1
 
         # if query response
-        if packet.dns_query_resp_ip:
-            resp_ip = packet.dns_query_resp_ip
+        if packet.dns_resp_ip:
+            resp_ip = packet.dns_resp_ip
             if resp_ip in ip_to_fqdns:
                 ip_to_fqdns[resp_ip].update(packet.dns_query_names)
             else:
@@ -86,14 +80,13 @@ def get_fqdn_counts(packets):
     ip_counts.pop(host_ip_addr, None)
 
     fqdn_counts = {}
-    fqdn_counts[unkown] = 0
+    fqdn_counts[unknown] = 0
     for ip, count in ip_counts.items():
         fqdns = ip_to_fqdns.get(ip, None)
 
         if fqdns:
             fqdn_counts[", ".join(fqdns)] = count
         else:
-            fqdn_counts[unkown] += 1
-
+            fqdn_counts[unknown] += 1
 
     return fqdn_counts
