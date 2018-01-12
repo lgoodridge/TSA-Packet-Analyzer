@@ -71,4 +71,3 @@ Responsible for displaying the data outputted by the analyzer in a clean, and in
 
 This product includes GeoLite2 data created by MaxMind, available from
 <a href="http://www.maxmind.com">http://www.maxmind.com</a>.
-a href="http://www.maxmind.com">http://www.maxmind.com</a>.
