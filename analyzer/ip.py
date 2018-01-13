@@ -5,6 +5,9 @@ This module contains IP related analysis functions.
 from capturer.p0f_proxy import get_security_info
 from tld import get_tld
 
+#Constants
+UNKNOWN = "Unknown"
+
 def get_host_ip_addr(stream, ip_counts=None):
     """
     Returns the host IP address from a stream of packets,
@@ -76,7 +79,7 @@ def get_ip_to_total_traffic_size(stream):
     for packet in stream:
         src = packet.src_addr
         dst = packet.dst_addr
-        length = packet.length
+        length = int(packet.length)
         ip_traffic_size[src] = ip_traffic_size[src] + length if src in ip_traffic_size else length
         ip_traffic_size[dst] = ip_traffic_size[dst] + length if dst in ip_traffic_size else length
     return ip_traffic_size
@@ -94,8 +97,6 @@ def aggregate_on_dns(ip_values, ip_fqdns):
     Returns:
         a dictionary mapping tld domains to the values in ip_values, aggregated.
     """
-    UNKNOWN = "Unknown"
-
     # Coalesce fqdn packet counts using ip count dict
     fqdn_domain_counts = {}
     fqdn_domain_counts[UNKNOWN] = 0

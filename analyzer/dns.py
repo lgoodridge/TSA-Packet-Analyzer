@@ -3,7 +3,7 @@ This module contains dns / hostname related analysis functions.
 """
 
 from analyzer.ip import get_host_ip_addr, get_ip_to_packet_count, \
-        get_ip_to_fqdns, aggregate_on_dns
+        get_ip_to_fqdns, aggregate_on_dns, UNKNOWN, get_ip_to_total_traffic_size
 
 def get_fqdn_to_packet_count(stream):
     """
@@ -14,7 +14,7 @@ def get_fqdn_to_packet_count(stream):
         packets (list): List of TSAPacket objects
 
     Returns:
-        A dictionary where the keys are tld domains and the values are the 
+        A dictionary where the keys are tld domains and the values are the
     number of packets from / to that tld domain.
     """
 
@@ -25,5 +25,27 @@ def get_fqdn_to_packet_count(stream):
     ip_counts.pop(host_ip_addr, None)
 
     fqdn_alias_count = aggregate_on_dns(ip_counts, ip_fqdns)
+
+    return fqdn_alias_count
+
+
+def get_fqdn_to_traffic_size(stream):
+    """
+    Computes the size of traffic in bytes that  the host has sent to or
+    received from each Fully Qualified Domain Name (fqdns), aggregated.
+
+    Args:
+        packets (list): List of TSAPacket objects
+
+    Returns:
+        A dictionary where the keys are tld domains and the values are the
+        size of traffic received from / to that tld domain.
+    """
+    ip_traffic_size = get_ip_to_total_traffic_size(stream)
+    ip_fqdns = get_ip_to_fqdns(stream)
+    host_ip_addr = get_host_ip_addr(stream)
+    ip_traffic_size.pop(host_ip_addr, None)
+
+    fqdn_alias_count = aggregate_on_dns(ip_traffic_size, ip_fqdns)
 
     return fqdn_alias_count
