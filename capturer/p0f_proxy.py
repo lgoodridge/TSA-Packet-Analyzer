@@ -68,12 +68,79 @@ def get_security_info(host_ip):
     Returns the stored security information for the provided
     IP address as a dictionary, or None if this host has not
     been seen yet.
+
+    The dictionary returned will have the following fields,
+    with missing or undetermined fields having a value of None:
+        os_name:  name of the OS host is using
+        os_full_name:  name and version of the OS host is using
+        app_name:  name of the HTTP application host is using
+        app_full_name: name and version of the application host is using
+        language:  system language
+        link_type:  network link type (e.g. 'Ethernet', 'DSL', ...)
+        num_hops:  network distance in packet hops
+        uptime:  estimated uptime of the system (in minutes)
     """
     if not p0f_db:
         return None
+
     try:
         raw_info = p0f_db.get_info(host_ip)
-        # TODO: parse this into a cleaner dictionary
-        return raw_info
+        results = {}
+
+        # Perform some processing on the string fields
+        os_name_raw = raw_info['os_name'].decode('utf8')
+        os_flavor_raw = raw_info['os_flavor'].decode('utf8')
+        if os_name_raw[0] != "\0":
+            os_name = os_name_raw.rstrip(" \0")
+            os_full_name = (os_name + " " + os_flavor_raw).rstrip(" \0")
+        else:
+            os_name = None
+            os_full_name = None
+
+        http_name_raw = raw_info['http_name'].decode('utf8')
+        http_flavor_raw = raw_info['http_name'].decode('utf8')
+        if http_name_raw[0] != "\0":
+            app_name = http_name_raw.rstrip(" \0")
+            app_full_name = (app_name + " " + http_flavor_raw).rstrip(" \0")
+        else:
+            app_name = None
+            app_full_name = None
+
+        language_raw = raw_info['language'].decode('utf8')
+        if language_raw[0] != "\0":
+            language = language_raw.rstrip(" \0")
+        else:
+            language = None
+
+        link_type_raw = raw_info['link_type'].decode('utf8')
+        if link_type_raw[0] != "\0":
+            link_type = str(link_type_raw).rstrip(" \0")
+        else:
+            link_type = language
+
+        # Perform some processing on the integer fields
+        if raw_info['distance'] and int(raw_info['distance']) != -1:
+            num_hops = int(raw_info['distance'])
+        else:
+            num_hops = None
+
+        if raw_info['uptime_min'] and int(raw_info['uptime_min']) != 0:
+            uptime = int(raw_info['uptime_min'])
+        else:
+            uptime = None
+
+        # Combine the processed results into a dict and return it
+        processed_info = {
+            'os_name': os_name,
+            'os_full_name': os_full_name,
+            'app_name': app_name,
+            'app_full_name': app_full_name,
+            'language': language,
+            'link_type': link_type,
+            'num_hops': num_hops,
+            'uptime': uptime,
+        }
+        return processed_info
+
     except KeyError:
         return None
