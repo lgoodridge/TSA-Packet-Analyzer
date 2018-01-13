@@ -30,11 +30,17 @@ def init_module():
     except geoip2.errors.AddressNotFoundError:
         pass
 
+def cleanup():
+    global geoip_db_reader
+    if geoip_db_reader:
+        geoip_db_reader = None
+
 def get_country(ip_addr):
     """
     Takes in an ip address (string) and returns the
     country name (string) it maps to in the geoip db.
     """
+    global geoip_db_reader
     try:
         name = geoip_db_reader.country(ip_addr).country.name
         return name

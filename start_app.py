@@ -13,6 +13,7 @@ from time import sleep
 import threading
 
 if __name__ == "__main__":
+
     # Initialize the capturer layer
     use_live_capture = get_setting('app', 'UseLiveCapture', 'bool')
     if use_live_capture:
@@ -41,9 +42,7 @@ if __name__ == "__main__":
         print(p0f_proxy.get_security_info(tsa_packets[0].dst_addr))
         print(p0f_proxy.get_security_info(tsa_packets[-1].dst_addr))
 
-    # TODO: Fix DNS response packets potentially not having dns.resp.a field
-
-    # Test analyzer. Analyzer module Will be used by visualizer.
+    # Test the analyzer layer
     country_counts = get_country_to_packet_count(tsa_packets)
     print("\n")
     for country, count in country_counts.items():
@@ -54,12 +53,13 @@ if __name__ == "__main__":
     for fqdn, count in fqdn_counts.items():
         print("Domain Name: {}, Count: {}\n".format(fqdn, count))
 
-    # start ui
+    # Start GUI
     tsa_ui.start_ui(live_capture=use_live_capture)
 
     # Perform clean up and exit the app
     print("All done. Perfoming cleanup...")
     wireshark_proxy.cleanup()
     p0f_proxy.cleanup()
+    geoip_proxy.cleanup()
     print("Cleanup finished. Exiting.")
     exit(0)
