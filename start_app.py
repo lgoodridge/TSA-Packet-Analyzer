@@ -44,12 +44,12 @@ if __name__ == "__main__":
         print(p0f_proxy.get_security_info(tsa_packets[-1].dst_addr))
 
     # Test the analyzer layer
-    country_counts = get_country_to_packet_count(tsa_packets)
+    country_counts = get_country_to_packet_count(tsa_stream)
     print("\n")
     for country, count in country_counts.items():
         print("Country: {}, Count: {}\n".format(country, count))
 
-    fqdn_counts = get_fqdn_to_packet_count(tsa_packets)
+    fqdn_counts = get_fqdn_to_packet_count(tsa_stream)
     print("\n")
     for fqdn, count in fqdn_counts.items():
         print("Domain Name: {}, Count: {}\n".format(fqdn, count))

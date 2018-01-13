@@ -2,6 +2,7 @@
 This module contains IP related analysis functions.
 """
 
+from capturer.p0f_proxy import get_security_info
 from tld import get_tld
 
 def get_host_ip_addr(stream, ip_counts=None):
@@ -54,6 +55,16 @@ def get_ip_to_fqdns(stream):
                 ip_fqdns[resp_ip] = set(packet.dns_query_names)
     return ip_fqdns
 
+def get_ip_to_security_info(stream):
+    """
+    Returns a dictionary relating IP addresses to
+    dictionaries containing security info gathered by p0f.
+    """
+    all_ip_addrs = stream.get_values_for_key('src_addr') +\
+            stream.get_values_for_key('src_addr')
+    unique_ip_addrs = set(all_ip_addrs)
+    ip_security = {ip: get_security_info(ip) for ip in unique_ip_addrs}
+    return ip_security
 
 def get_ip_to_total_traffic_size(stream):
     """
@@ -70,7 +81,6 @@ def get_ip_to_total_traffic_size(stream):
         ip_traffic_size[dst] = ip_traffic_size[dst] + length if dst in ip_traffic_size else length
     return ip_traffic_size
 
-
 def aggregate_on_dns(ip_values, ip_fqdns):
     """
     Aggregates the values in ip_values based on domains accessed from
@@ -85,7 +95,7 @@ def aggregate_on_dns(ip_values, ip_fqdns):
         a dictionary mapping tld domains to the values in ip_values, aggregated.
     """
     UNKNOWN = "Unknown"
-    
+
     # Coalesce fqdn packet counts using ip count dict
     fqdn_domain_counts = {}
     fqdn_domain_counts[UNKNOWN] = 0
@@ -122,11 +132,11 @@ def aggregate_on_dns(ip_values, ip_fqdns):
                                         fqdn_domain_aliases[domain] = fqdn_domain_aliases[domain].union(fqdn_domain_aliases[domain1])
                                         fqdn_domain_aliases[domain1] = fqdn_domain_aliases[domain].union(fqdn_domain_aliases[domain1])
                         fqdn_domain_aliases[domain1].add(domain2)
-            
+
         else:
             fqdn_domain_counts[UNKNOWN] += 1
 
-    fqdn_alias_count = {}    
+    fqdn_alias_count = {}
     for domain in fqdn_domain_counts:
         alias_list = list(fqdn_domain_aliases[domain])
         alias_list.sort()

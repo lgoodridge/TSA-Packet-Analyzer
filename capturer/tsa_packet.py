@@ -32,7 +32,7 @@ class TSAPacket(dict):
         http_req_resp:  'request' | 'response' (if HTTP packet)
         http_method:  'GET' | 'PUT' | 'POST' | ... (if HTTP request)
         http_status:  response status code (if HTTP response)
-        length:    packet length in bytes (required)
+        length:  packet length in bytes (required)
     """
 
     FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr', 'protocol',
