@@ -5,9 +5,11 @@ Defines the entry point for the application.
 from capturer import p0f_proxy, wireshark_proxy
 from analyzer import tsa_statistics
 from visualizer import tsa_ui
+
 from settings import get_setting
 from sys import argv, exit
 from time import sleep
+import threading
 
 if __name__ == "__main__":
     # Initialize the capturer layer
@@ -50,8 +52,8 @@ if __name__ == "__main__":
     for fqdn, count in fqdn_counts.items():
         print("Domain Name: {}, Count: {}\n".format(fqdn, count))
 
-    # TODO: Start up visualizer
-    tsa_ui.start_tsa_ui()
+    # start ui
+    tsa_ui.start_ui(live_capture=use_live_capture)
 
     # Perform clean up and exit the app
     print("All done. Perfoming cleanup...")
