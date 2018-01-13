@@ -16,15 +16,16 @@ if __name__ == "__main__":
 
     # Initialize the capturer layer
     use_live_capture = get_setting('app', 'UseLiveCapture', 'bool')
+    geoip_proxy.init_module()
     if use_live_capture:
         capture_interface = get_setting('app', 'CaptureInterface')
         wireshark_proxy.init_live_capture(capture_interface)
         p0f_proxy.init_live_capture(capture_interface)
-        geoip_proxy.init_module()
         print("Capturing initial packets...")
         sleep(10)
         print("Done!")
     else:
+
         init_filepath = get_setting('app', 'InitFileLocation')
         wireshark_proxy.init_from_file(init_filepath)
         p0f_proxy.init_from_file(init_filepath)
