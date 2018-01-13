@@ -23,7 +23,7 @@ wget http://lcamtuf.coredump.cx/p0f3/releases/p0f-3.09b.tgz
 tar -xzvf p0f-3.09b.tgz
 cd p0f-3.09b
 make
-sudo ln -s "($pwd)/p0f /usr/local/bin/p0f
+sudo ln -s "($PWD)/p0f" /usr/local/bin/p0f
 ```
 
 ### All Platforms
