@@ -1,8 +1,8 @@
 
 # TSA libraries
 from capturer import p0f_proxy, wireshark_proxy
-from analyzer.country import get_country_to_packet_count
-from analyzer.dns import get_fqdn_to_packet_count
+from analyzer.country import get_country_to_packet_count, get_country_to_traffic_size
+from analyzer.dns import get_fqdn_to_packet_count, get_fqdn_to_traffic_size
 from settings import get_setting
 
 # DASH ui libraries and plotly
@@ -20,6 +20,7 @@ from . import layouts
 
 # Global variables
 state = {}
+STATE_UPDATE_RATE = 5 # seconds
 
 app = dash.Dash()
 # suppress callback exceptions so that we can assign callbacks to
@@ -39,9 +40,9 @@ def start_ui(live_capture=False):
     app.run_server(debug=get_setting('app', 'EnableDebugMode'))
 
 def updater():
-    # update state every 5 seconds
+    # update state every UPDATE_RATE seconds
     while True:
-        sleep(5)
+        sleep(STATE_UPDATE_RATE)
         update_ui_state()
 
 def update_ui_state():
@@ -49,52 +50,92 @@ def update_ui_state():
 
     packets = wireshark_proxy.read_packets().get_packets()
 
-    country_count_tups = [tuple([key, count]) for key, count in
-                          get_country_to_packet_count(packets).items()]
-    fqdn_count_tups = [tuple([key, count]) for key, count in
-                       get_fqdn_to_packet_count(packets).items()]
+    country_count_tups = list(get_country_to_packet_count(packets).items())
+    fqdn_count_tups = list(get_fqdn_to_packet_count(packets).items())
+    country_traffic_tups = list(get_country_to_traffic_size(packets).items())
+    fqdn_traffic_tups = list(get_fqdn_to_traffic_size(packets).items())
 
     state["country_counts"] = country_count_tups
     state["fqdn_counts"] = fqdn_count_tups
+    state["country_traffic"] = country_traffic_tups
+    state["fqdn_traffic"] = fqdn_traffic_tups
 
+def get_curr_state():
+    return state
 
 
 ##########################
 # Callbacks to update UI #
 ##########################
 
-# Update statistics graph.
-@app.callback(Output('statistics-graph', 'figure'),
-              [Input('statistics-dropdown', 'value')])
-def update_statistics_graphs(dropdown_option):
+# Update packet count statistics graph.
+@app.callback(Output('statistics-packet-counts-graph', 'figure'),
+              [Input('statistics-packet-counts-radio', 'value')])
+def update_count_statistics_graph(radio_option):
+    size_disp = 15
 
-    if dropdown_option == 'CNTRY':
+    if radio_option == 'CNTRY':
         max_vals = state.get("country_counts", [])
         statistics_type = 'Country'
-    elif dropdown_option == 'FQDN':
+    elif radio_option == 'FQDN':
         max_vals = state.get("fqdn_counts", [])
         statistics_type = 'Domain Name'
 
     max_vals.sort(key=lambda tup: tup[1], reverse=True)
-    max_vals = max_vals[0:15] if len(max_vals) > 10 else max_vals
+    max_vals = max_vals[0:size_disp] if len(max_vals) > 10 else max_vals
 
     labels = [item[0][0:40] for item in max_vals]
     values = [item[1] for item in max_vals]
 
-    data = go.Pie(labels=labels, values=values, text=statistics_type)
+    data = go.Pie(labels=labels, values=values, text=statistics_type, hovertext=values)
 
     layout = go.Layout(
-        title='Number of Packets by {} (Top 10)'.format(statistics_type),
+        title='Number of Packets by {} (Top {})'.format(statistics_type, size_disp),
         margin=go.Margin(l=40, r=0, t=40, b=30)
     )
 
     return go.Figure(data=[data], layout=layout)
 
+
+# Update packet traffic statistics graph.
+@app.callback(Output('statistics-packet-traffic-graph', 'figure'),
+              [Input('statistics-packet-traffic-radio', 'value')])
+def update_traffic_statistics_graph(radio_option):
+    size_disp = 15
+
+    if radio_option == 'CNTRY':
+        max_vals = state.get("country_traffic", [])
+        statistics_type = 'Country'
+    elif radio_option == 'FQDN':
+        max_vals = state.get("fqdn_traffic", [])
+        statistics_type = 'Domain Name'
+
+    max_vals.sort(key=lambda tup: tup[1], reverse=True)
+    max_vals = max_vals[0:size_disp] if len(max_vals) > 10 else max_vals
+
+    labels = [item[0][0:40] for item in max_vals]
+    values = [item[1] for item in max_vals]
+
+    data = go.Pie(labels=labels, values=values, text=statistics_type, hovertext=values)
+
+    layout = go.Layout(
+        title='Size of Traffic by {} (Top {})'.format(statistics_type, size_disp),
+        margin=go.Margin(l=40, r=0, t=40, b=30)
+    )
+
+    return go.Figure(data=[data], layout=layout)
+
+
+# Update country traffic choropleth map
+@app.callback(Output('country-traffic-choropleth-map', 'figure'),
+              [Input('country-traffic-choropleth-map-refresh-button', 'n_clicks')])
+def update_country_traffic_statistics_map(n_clicks):
+    return layouts.get_choropleth_map_figure()
+
 # Update the index
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def update_page(pathname):
-    print ("Here...\n\n{}".format(pathname))
     if pathname == '/search':
         return layouts.get_search_page()
     elif pathname == '/statistics':
