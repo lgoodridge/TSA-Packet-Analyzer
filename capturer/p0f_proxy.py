@@ -80,6 +80,7 @@ def get_security_info(host_ip):
         num_hops:  network distance in packet hops
         uptime:  estimated uptime of the system (in minutes)
     """
+    global p0f_db
     if not p0f_db:
         return None
 
