@@ -68,7 +68,7 @@ def get_ip_to_total_traffic_size(stream):
     for packet in stream:
         src = packet.src_addr
         dst = packet.dst_addr
-        length = int(packet.length)
+        length = packet.length
         ip_traffic_size[src] = ip_traffic_size[src] + length if src in ip_traffic_size else length
         ip_traffic_size[dst] = ip_traffic_size[dst] + length if dst in ip_traffic_size else length
     return ip_traffic_size

@@ -176,7 +176,7 @@ class TSAPacket(dict):
             init_data['application_type'] = "none"
 
         # Extract packet length (in bytes)
-        init_data['length'] = packet.length
+        init_data['length'] = int(packet.length)
 
         return TSAPacket(init_data)
 
