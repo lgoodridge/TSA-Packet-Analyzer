@@ -8,15 +8,10 @@ def get_country_from_ip_geoipDB(ip_addr):
     """
     Takes in an ip address (string) and returns the country name (string) it maps to in the geoip db.
     """
-    name = None
-
     try:
-        name = GEOIP_DB_READER.country(ip_addr).country.name
+        return GEOIP_DB_READER.country(ip_addr).country.name
     except geoip2.errors.AddressNotFoundError:
-        #TODO: maybe make this a log?
-        print("INFO: IP Address {} not found\n".format(ip_addr))
-
-    return name
+        return None
 
 def get_host_ip_addr(packets):
     """
