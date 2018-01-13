@@ -52,3 +52,18 @@ def get_ip_to_fqdns(stream):
                 ip_fqdns[resp_ip] = set(packet.dns_query_names)
     return ip_fqdns
 
+
+def get_ip_to_total_traffic_size(stream):
+    """
+    Returns a dictionary relating IP addresses to their total traffic size.
+    Where total traffic size is the size of all the packets that the address
+    is present in as a source or a destination in the provided stream.
+    """
+    ip_traffic_size = {}
+    for packet in stream:
+        src = packet.src_addr
+        dst = packet.dst_addr
+        length = packet.length
+        ip_traffic_size[src] = ip_traffic_size[src] + length if src in ip_traffic_size else length
+        ip_traffic_size[dst] = ip_traffic_size[dst] + length if dst in ip_traffic_size else length
+    return ip_traffic_size

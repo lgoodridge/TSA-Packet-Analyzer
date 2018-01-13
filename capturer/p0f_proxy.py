@@ -10,6 +10,7 @@ from settings import get_setting
 
 import os
 import subprocess
+import sys
 
 # p0f database containing current
 # security data for all seen hosts
@@ -31,6 +32,7 @@ def _init_p0f(flag, value):
     database_path = get_setting('p0f', 'DatabaseFilePath')
     socket_path = get_setting('p0f', 'APISocketFilePath')
 
+    sys.stdout.flush()
     background_proc = subprocess.Popen(["p0f", "-f", database_path,
         "-s", socket_path, flag, value], stdout=open(os.devnull, 'w'),
         stderr=subprocess.STDOUT, close_fds=True)

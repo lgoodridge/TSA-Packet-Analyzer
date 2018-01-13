@@ -32,15 +32,16 @@ class TSAPacket(dict):
         http_req_resp:  'request' | 'response' (if HTTP packet)
         http_method:  'GET' | 'PUT' | 'POST' | ... (if HTTP request)
         http_status:  response status code (if HTTP response)
+        length:    packet length in bytes (required)
     """
 
     FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr', 'protocol',
               'src_port', 'dst_port', 'tcp_op', 'application_type',
               'dns_query_resp', 'dns_query_names', 'dns_resp_ip',
-              'http_req_resp', 'http_method', 'http_status']
+              'http_req_resp', 'http_method', 'http_status', 'length']
 
     REQUIRED_FIELDS = ['timestamp', 'ip_version', 'src_addr', 'dst_addr',
-                       'protocol', 'src_port', 'dst_port', 'application_type']
+                       'protocol', 'src_port', 'dst_port', 'application_type', 'length']
 
     def __init__(self, init_data):
         """
@@ -173,6 +174,9 @@ class TSAPacket(dict):
 
         else:
             init_data['application_type'] = "none"
+
+        # Extract packet length (in bytes)
+        init_data['length'] = packet.length
 
         return TSAPacket(init_data)
 
