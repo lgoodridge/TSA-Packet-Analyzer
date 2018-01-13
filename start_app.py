@@ -2,8 +2,9 @@
 Defines the entry point for the application.
 """
 
-from capturer import p0f_proxy, wireshark_proxy
-from analyzer import tsa_statistics
+from capturer import geoip_proxy, p0f_proxy, wireshark_proxy
+from analyzer.country import get_country_to_packet_count
+from analyzer.dns import get_fqdn_to_packet_count
 from visualizer import tsa_ui
 
 from settings import get_setting
@@ -18,6 +19,7 @@ if __name__ == "__main__":
         capture_interface = get_setting('app', 'CaptureInterface')
         wireshark_proxy.init_live_capture(capture_interface)
         p0f_proxy.init_live_capture(capture_interface)
+        geoip_proxy.init_module()
         print("Capturing initial packets...")
         sleep(10)
         print("Done!")
@@ -42,12 +44,12 @@ if __name__ == "__main__":
     # TODO: Fix DNS response packets potentially not having dns.resp.a field
 
     # Test analyzer. Analyzer module Will be used by visualizer.
-    country_counts = tsa_statistics.get_country_counts(tsa_packets)
+    country_counts = get_country_to_packet_count(tsa_packets)
     print("\n")
     for country, count in country_counts.items():
         print("Country: {}, Count: {}\n".format(country, count))
 
-    fqdn_counts = tsa_statistics.get_fqdn_counts(tsa_packets)
+    fqdn_counts = get_fqdn_to_packet_count(tsa_packets)
     print("\n")
     for fqdn, count in fqdn_counts.items():
         print("Domain Name: {}, Count: {}\n".format(fqdn, count))

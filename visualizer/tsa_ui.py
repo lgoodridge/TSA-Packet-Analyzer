@@ -1,7 +1,8 @@
 
 # TSA libraries
 from capturer import p0f_proxy, wireshark_proxy
-from analyzer import tsa_statistics
+from analyzer.country import get_country_to_packet_count
+from analyzer.dns import get_fqdn_to_packet_count
 from settings import get_setting
 
 # DASH ui libraries and plotly
@@ -65,7 +66,6 @@ def update_output(dropdown_option):
 
     return go.Figure(data=[data], layout=layout)
 
-
 def start_ui(live_capture=False):
     if live_capture:
         # start up background thread to periodically update ui state.
@@ -74,7 +74,7 @@ def start_ui(live_capture=False):
     else:
         update_ui_state()
 
-    app.run_server(debug=True)
+    app.run_server(debug=get_setting('app', 'EnableDebugMode'))
 
 def updater():
     # update state every 10 seconds
@@ -88,9 +88,9 @@ def update_ui_state():
     packets = wireshark_proxy.read_packets().get_packets()
 
     country_count_tups = [tuple([key, count]) for key, count in
-                          tsa_statistics.get_country_counts(packets).items()]
+                          get_country_to_packet_count(packets).items()]
     fqdn_count_tups = [tuple([key, count]) for key, count in
-                       tsa_statistics.get_fqdn_counts(packets).items()]
+                       get_fqdn_to_packet_count(packets).items()]
 
     state["country_counts"] = country_count_tups
     state["fqdn_counts"] = fqdn_count_tups
