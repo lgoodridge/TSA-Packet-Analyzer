@@ -37,6 +37,16 @@ class TSAStream:
 
         return "TSA Stream: {\n%s\n}" % "\n".join(str_list)
 
+    ### METHODS TO ALLOW LIST INDEXING SYNTAX ###
+
+    def __getitem__(self, index):
+        return self._packets[index]
+
+    def __iter__(self):
+        return iter(self._packets)
+
+    ### STREAM METHODS ###
+
     def get_packets(self, sort_key=None, include_missing=False):
         """
         Returns a list of TSAPackets in the stream.
