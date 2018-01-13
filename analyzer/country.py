@@ -3,7 +3,7 @@ This module contains country related analysis functions
 """
 
 from capturer.geoip_proxy import get_country
-from analyzer.ip import get_host_ip_addr, get_ip_to_packet_count, get_ip_to_total_traffic_size, UNKNOWN
+from analyzer.ip import get_host_ip_addr, get_ip_to_packet_count, get_ip_to_total_traffic_size, UNKNOWN, PACKET_COUNT, TRAFFIC_SIZE
 
 def get_country_to_packet_count(stream):
     """
@@ -69,3 +69,28 @@ def get_country_to_traffic_size(stream):
             country_traffic_sizes[UNKNOWN] += 1
 
     return country_traffic_sizes
+
+
+
+def consolidate_country_data(stream):
+    """
+    Consolidates all known country data
+
+    Args:
+        stream (TSAStream object): List of TSAPacket objects
+
+    Returns:
+        A dictionary mapping each country to a dictionary of data,
+        ex: {"USA": {"Packet Count": 50, "Traffic Size": 1200}}
+    """   
+    country_data = {}
+    country_traffic_size = get_country_to_traffic_size(stream)
+    country_packet_count = get_country_to_packet_count(stream)
+
+    for country in country_traffic_size:
+        data = {}
+        data[PACKET_COUNT] = country_packet_count[country]
+        data[TRAFFIC_SIZE] = country_traffic_size[country]
+        country_data[country] = data
+
+    return country_data

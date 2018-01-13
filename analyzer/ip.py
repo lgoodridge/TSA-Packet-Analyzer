@@ -7,6 +7,9 @@ from tld import get_tld
 #Constants
 UNKNOWN = "Unknown"
 
+PACKET_COUNT = "Packet Count"
+TRAFFIC_SIZE = "Traffic Size"
+
 def get_host_ip_addr(stream, ip_counts=None):
     """
     Returns the host IP address from a stream of packets,

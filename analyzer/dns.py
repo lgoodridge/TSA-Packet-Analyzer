@@ -3,7 +3,8 @@ This module contains dns / hostname related analysis functions.
 """
 
 from analyzer.ip import get_host_ip_addr, get_ip_to_packet_count, \
-        get_ip_to_fqdns, aggregate_on_dns, UNKNOWN, get_ip_to_total_traffic_size
+        get_ip_to_fqdns, aggregate_on_dns, UNKNOWN, PACKET_COUNT, TRAFFIC_SIZE,\
+        get_ip_to_total_traffic_size
 
 def get_fqdn_to_packet_count(stream):
     """
@@ -49,3 +50,27 @@ def get_fqdn_to_traffic_size(stream):
     fqdn_alias_count = aggregate_on_dns(ip_traffic_size, ip_fqdns)
 
     return fqdn_alias_count
+
+def consolidate_fqdn_data(stream):
+    """
+    Consolidates all known fqdn data
+
+    Args:
+        stream (TSAStream object): List of TSAPacket objects
+
+    Returns:
+        A dictionary mapping each domain to a dictionary of data,
+        ex: {"google.com": {"Packet Count": 50, "Traffic Size": 1200}}
+    """   
+    fqdn_data = {}
+    fqdn_traffic_size = get_fqdn_to_traffic_size(stream)
+    fqdn_packet_count = get_fqdn_to_packet_count(stream)
+
+    for fqdn in fqdn_traffic_size:
+        data = {}
+        data[PACKET_COUNT] = fqdn_packet_count[fqdn]
+        data[TRAFFIC_SIZE] = fqdn_traffic_size[fqdn]
+        fqdn_data[fqdn] = data
+
+    return fqdn_data
+
