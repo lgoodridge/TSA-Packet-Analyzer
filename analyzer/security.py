@@ -26,7 +26,7 @@ def get_syn_flood_attackers(stream):
     # Find hosts that have sent much more SYNs than ACKs
     syn_flood_attackers = []
     for addr, (syn, ack) in ip_to_syn_ack.items():
-        if syn > ATTACK_THRESHOLD and syn > ack * ATTACK_MULT_THRESHOLD:
+        if syn > ATTACK_BASE_THRESHOLD and syn > ack * ATTACK_MULT_THRESHOLD:
             syn_flood_attackers.append((addr,
                 "Host has sent much more SYNs than ACKs"))
 
@@ -53,7 +53,7 @@ def get_ddos_victims(stream):
     # Find hosts that have sent much more SYN-ACKs than ACKs
     ddos_victims = []
     for addr, (synack, ack) in ip_to_synack_ack.items():
-        if synack > ATTACK_THRESHOLD and synack > ack * ATTACK_MULT_THRESHOLD:
+        if synack > ATTACK_BASE_THRESHOLD and synack > ack * ATTACK_MULT_THRESHOLD:
             ddos_victims.append((addr,
                 "Host has sent much more SYN-ACKs than ACKs"))
 
@@ -83,7 +83,7 @@ def get_reflection_victims(stream):
     # Find hosts that received much DNS responses than sent DNS queries
     reflection_victims = []
     for addr, (query, resp) in ip_to_dns_query_resp.items():
-        if resp > ATTACK_THRESHOLD and resp > query * ATTACK_MULT_THRESHOLD:
+        if resp > ATTACK_BASE_THRESHOLD and resp > query * ATTACK_MULT_THRESHOLD:
             reflection_victims.append((addr,
                 "Host has received much DNS responses than queried for"))
 

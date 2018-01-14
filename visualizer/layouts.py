@@ -3,8 +3,11 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 from . import tsa_ui
+from .styles import link_style
 
-link_style = {'color':'#0000ff'}
+POSSIBLE_CHOROPLETH_SCOPES = ["world", "usa", "europe", "asia", "africa", "north america", "south america"]
+UNKNOWN = 'Unknown'
+
 
 def get_app_layout():
     return html.Div(children=[
@@ -13,9 +16,7 @@ def get_app_layout():
         html.Div(
             children=[
                 html.H1(children='TSA App'),
-                html.Div(children='''
-                Powered by Dash: A web application framework for Python.
-                ''')]
+                html.Div(children='''Powered by Dash: A web application framework for Python.''')]
         ),
 
         html.Div(id='page-content')
@@ -23,10 +24,11 @@ def get_app_layout():
 
 def get_index_page():
     return html.Div([
-        html.H1('Main'),
         dcc.Link('Search', href='/search', style=link_style),
         html.Br(),
         dcc.Link('Statistics', href='/statistics', style=link_style),
+        html.Br(),
+        dcc.Link('Maps', href='/maps', style=link_style),
         html.Br(),
         dcc.Link('Metrics', href='/metrics', style=link_style),
         html.Br(),
@@ -67,18 +69,12 @@ def get_statistics_page():
                        value='CNTRY')
     ])
 
-    choropleth_map_with_button = html.Div([
-        dcc.Graph(id='country-traffic-choropleth-map'),
-        html.Button('Refresh', id='country-traffic-choropleth-map-refresh-button')
-    ])
-
     return html.Div([
         html.H1('Statistics'),
         dcc.Link('Back to Main', href='/', style=link_style),
         html.Div([
             count_graph_with_radio,
             trafic_graph_with_radio,
-            choropleth_map_with_button
         ])
     ])
 
@@ -96,10 +92,21 @@ def get_security_page():
         dcc.Link('Back to Main', href='/', style=link_style),
     ])
 
+def get_map_page():
 
-def get_choropleth_map_figure():
+    choropleth_map_with_button = html.Div([
+        html.Button('Refresh', id='country-traffic-choropleth-maps-refresh-button'),
+        html.Div(id='country-traffic-choropleth-maps')
+    ])
 
-    UNKNOWN = 'Unknown'
+    return html.Div([
+        html.H1('Maps'),
+        dcc.Link('Back to Main', href='/', style=link_style),
+        html.Div(choropleth_map_with_button),
+    ])
+
+# Get a choropleth map figures based on current state
+def get_choropleth_map_figures():
 
     country_traffic_tups = tsa_ui.get_curr_state().get("country_traffic", [])
     country_traffic_tups = [tup for tup in country_traffic_tups if tup[0] != UNKNOWN]
@@ -107,6 +114,26 @@ def get_choropleth_map_figure():
     locations = [tup[0] for tup in country_traffic_tups]
     locationmode = "country names"
     z = [tup[1] for tup in country_traffic_tups]
+
+    desired_scopes = ['world', 'north america', 'europe', 'asia', 'africa', 'south america']
+
+    map_figures = []
+    for scope in desired_scopes:
+        args = [locations, z, locationmode, scope]
+        map_figures.append(get_choropleth_map_figure(*args))
+
+    return map_figures
+
+# Get a choropleth map trace based on current state. Can specify a scope for the map.
+# The scope must be one of:
+# "world" | "usa" | "europe" | "asia" | "africa" | "north america" | "south america"
+def get_choropleth_map_figure(locations, z, locationmode, scope="world"):
+    scope = scope.lower()
+
+    if scope not in POSSIBLE_CHOROPLETH_SCOPES:
+        message = '"{}" is not a valid scope. Scope must be one of: {}'.format(scope, ", ".join(POSSIBLE_CHOROPLETH_SCOPES))
+        raise ChoroplethScopeException(message)
+
 
     colorscale = [[0, "rgb(5, 10, 172)"], [0.35, "rgb(40, 60, 190)"], [0.5, "rgb(70, 100, 245)"],
                   [0.6, "rgb(90, 120, 245)"], [0.7, "rgb(106, 137, 247)"], [1, "rgb(220, 220, 220)"]]
@@ -123,9 +150,10 @@ def get_choropleth_map_figure():
         title='Size of Traffic (bytes)')
 
     layout = dict(
-        title='Map of Country Traffic',
+        title='Map of Country Traffic. Region: {}'.format(scope.capitalize()),
         geo=dict(
-            showframe=True,
+            scope=scope,
+            showframe=False,
             showcoastlines=True,
             showcountries=True,
             projection=dict(
@@ -140,3 +168,7 @@ def get_choropleth_map_figure():
 
     return go.Figure(data=[data], layout=layout)
 
+
+class ChoroplethScopeException(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)

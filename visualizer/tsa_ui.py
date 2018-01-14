@@ -7,6 +7,7 @@ from settings import get_setting
 
 # DASH ui libraries and plotly
 import dash
+import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 
@@ -40,6 +41,9 @@ def start_ui(live_capture=False):
     app.run_server(debug=get_setting('app', 'EnableDebugMode'))
 
 def updater():
+    sleep(0.5)
+    update_ui_state()
+
     # update state every UPDATE_RATE seconds
     while True:
         sleep(STATE_UPDATE_RATE)
@@ -127,12 +131,19 @@ def update_traffic_statistics_graph(radio_option):
 
 
 # Update country traffic choropleth map
-@app.callback(Output('country-traffic-choropleth-map', 'figure'),
-              [Input('country-traffic-choropleth-map-refresh-button', 'n_clicks')])
+@app.callback(Output('country-traffic-choropleth-maps', 'children'),
+              [Input('country-traffic-choropleth-maps-refresh-button', 'n_clicks')])
 def update_country_traffic_statistics_map(n_clicks):
-    return layouts.get_choropleth_map_figure()
 
-# Update the index
+    map_graphs = []
+    for idx, figure in enumerate(layouts.get_choropleth_map_figures()):
+        id = "country-traffic-choropleth-figure-{}".format(idx)
+        graph = dcc.Graph(id=id, figure=figure, style={'float': 'left', 'width': '45%'})
+        map_graphs.append(graph)
+
+    return map_graphs
+
+# Update the page on url update
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def update_page(pathname):
@@ -140,6 +151,8 @@ def update_page(pathname):
         return layouts.get_search_page()
     elif pathname == '/statistics':
         return layouts.get_statistics_page()
+    elif pathname == '/maps':
+        return layouts.get_map_page()
     elif pathname == '/metrics':
         return layouts.get_metrics_page()
     elif pathname == '/security':
