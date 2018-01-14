@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 from . import tsa_ui
-from .styles import link_style
+from . import styles
 
 POSSIBLE_CHOROPLETH_SCOPES = ["world", "usa", "europe", "asia", "africa", "north america", "south america"]
 UNKNOWN = 'Unknown'
@@ -24,22 +24,22 @@ def get_app_layout():
 
 def get_index_page():
     return html.Div([
-        dcc.Link('Search', href='/search', style=link_style),
+        dcc.Link('Search', href='/search', style=styles.LINK),
         html.Br(),
-        dcc.Link('Statistics', href='/statistics', style=link_style),
+        dcc.Link('Statistics', href='/statistics', style=styles.LINK),
         html.Br(),
-        dcc.Link('Maps', href='/maps', style=link_style),
+        dcc.Link('Maps', href='/maps', style=styles.LINK),
         html.Br(),
-        dcc.Link('Metrics', href='/metrics', style=link_style),
+        dcc.Link('Metrics', href='/metrics', style=styles.LINK),
         html.Br(),
-        dcc.Link('Security', href='/security', style=link_style),
+        dcc.Link('Security', href='/security', style=styles.LINK),
     ])
 
 
 def get_search_page():
     return html.Div([
         html.H1('Search'),
-        dcc.Link('Back to Main', href='/', style=link_style),
+        dcc.Link('Back to Main', href='/', style=styles.LINK),
         html.Div([
             dcc.Input(id='input-domain-info-search', type='text', value='Domain Name'),
             html.Button(id='domain-info-button', n_clicks=0, children='Go')
@@ -57,7 +57,7 @@ def get_statistics_page():
                            {'label': 'Domain Names', 'value': 'FQDN'}
                        ],
                        value='CNTRY')
-    ])
+    ], style=styles.FLOAT_LEFT_HALF_WIDTH)
 
     trafic_graph_with_radio = html.Div([
         dcc.Graph(id='statistics-packet-traffic-graph'),
@@ -67,11 +67,11 @@ def get_statistics_page():
                            {'label': 'Domain Names', 'value': 'FQDN'}
                        ],
                        value='CNTRY')
-    ])
+    ], style=styles.FLOAT_LEFT_HALF_WIDTH)
 
     return html.Div([
         html.H1('Statistics'),
-        dcc.Link('Back to Main', href='/', style=link_style),
+        dcc.Link('Back to Main', href='/', style=styles.LINK),
         html.Div([
             count_graph_with_radio,
             trafic_graph_with_radio,
@@ -82,14 +82,14 @@ def get_statistics_page():
 def get_metrics_page():
     return html.Div([
         html.H1('Metrics'),
-        dcc.Link('Back to Main', href='/', style=link_style),
+        dcc.Link('Back to Main', href='/', style=styles.LINK),
     ])
 
 
 def get_security_page():
     return html.Div([
         html.H1('Security'),
-        dcc.Link('Back to Main', href='/', style=link_style),
+        dcc.Link('Back to Main', href='/', style=styles.LINK),
     ])
 
 def get_map_page():
@@ -101,7 +101,7 @@ def get_map_page():
 
     return html.Div([
         html.H1('Maps'),
-        dcc.Link('Back to Main', href='/', style=link_style),
+        dcc.Link('Back to Main', href='/', style=styles.LINK),
         html.Div(choropleth_map_with_button),
     ])
 

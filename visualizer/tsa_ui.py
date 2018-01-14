@@ -18,6 +18,7 @@ from time import sleep
 
 # App layout
 from . import layouts
+from . import styles
 
 # Global variables
 state = {}
@@ -138,7 +139,7 @@ def update_country_traffic_statistics_map(n_clicks):
     map_graphs = []
     for idx, figure in enumerate(layouts.get_choropleth_map_figures()):
         id = "country-traffic-choropleth-figure-{}".format(idx)
-        graph = dcc.Graph(id=id, figure=figure, style={'float': 'left', 'width': '45%'})
+        graph = dcc.Graph(id=id, figure=figure, style=styles.FLOAT_LEFT_HALF_WIDTH)
         map_graphs.append(graph)
 
     return map_graphs

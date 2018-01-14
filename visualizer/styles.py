@@ -1,3 +1,4 @@
 # Python File containing styles for dash components
 
-link_style = {'color':'#0000ff', 'text-decoration': 'underline'}
+LINK = {'color': '#0000ff', 'text-decoration': 'underline'}
+FLOAT_LEFT_HALF_WIDTH={'float': 'left', 'width': '45%'}
