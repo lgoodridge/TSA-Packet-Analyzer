@@ -2,7 +2,7 @@
 This module contains country related analysis functions
 """
 
-from capturer.geoip_proxy import get_country
+from capturer.geoip_proxy import get_country_name
 from analyzer.ip import get_host_ip_addr, get_ip_to_packet_count, get_ip_to_total_traffic_size, UNKNOWN, PACKET_COUNT, TRAFFIC_SIZE
 
 def get_country_to_packet_count(stream):
@@ -27,7 +27,7 @@ def get_country_to_packet_count(stream):
     # Coalesce country packet counts using ip count dict
     country_counts = {UNKNOWN: 0}
     for ip, count in ip_counts.items():
-        country_name = get_country(ip)
+        country_name = get_country_name(ip)
         if country_name:
             if country_name in country_counts:
                 country_counts[country_name] += count
@@ -62,7 +62,7 @@ def get_country_to_traffic_size(stream):
     # Coalesce country packet counts using ip count dict
     country_traffic_sizes = {UNKNOWN: 0}
     for ip, traffic_size in ip_traffic_size.items():
-        country_name = get_country(ip)
+        country_name = get_country_name(ip)
         if country_name:
             if country_name in country_traffic_sizes:
                 country_traffic_sizes[country_name] += traffic_size

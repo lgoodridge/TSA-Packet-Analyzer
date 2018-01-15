@@ -3,6 +3,7 @@ This module contains IP related analysis functions.
 """
 
 from capturer.p0f_proxy import get_security_info
+from capturer.geoip_proxy import get_country_name
 from tld import get_tld
 
 #Constants
@@ -10,6 +11,8 @@ UNKNOWN = "Unknown"
 
 PACKET_COUNT = "Packet Count"
 TRAFFIC_SIZE = "Traffic Size"
+SECURITY_INFO = "Security Info"
+COUNTRY_NAMES = "Country Names"
 
 def get_host_ip_addr(stream, ip_counts=None):
     """
@@ -65,12 +68,52 @@ def get_ip_to_security_info(stream):
     """
     Returns a dictionary relating IP addresses to
     dictionaries containing security info gathered by p0f.
+
+    Each dictionary containing security info will have the following fields,
+    with missing or undetermined fields having a value of None:
+        os_name:  name of the OS host is using
+        os_full_name:  name and version of the OS host is using
+        app_name:  name of the HTTP application host is using
+        app_full_name: name and version of the application host is using
+        language:  system language
+        link_type:  network link type (e.g. 'Ethernet', 'DSL', ...)
+        num_hops:  network distance in packet hops
+        uptime:  estimated uptime of the system (in minutes)
     """
-    all_ip_addrs = stream.get_values_for_key('src_addr') +\
-            stream.get_values_for_key('src_addr')
-    unique_ip_addrs = set(all_ip_addrs)
-    ip_security = {ip: get_security_info(ip) for ip in unique_ip_addrs}
+    ip_security = {}
+    for packet in stream:
+        src = packet.src_addr
+        dst = packet.dst_addr
+        ips = [src, dst]
+
+        for ip in ips:
+            ip_security[ip] = get_security_info(ip) if ip not in ip_security else ip_security[ip]
+
     return ip_security
+
+def get_ip_to_country_name(stream):
+    """
+    Returns a dictionary relating IP addresses to the country
+    that the server of each IP address is believed to be located in.
+    If an ip address cannot be associated with a country UNKNOWN
+    is returned.
+    """
+    ip_country = {}
+    for packet in stream:
+        src = packet.src_addr
+        dst = packet.dst_addr
+        ips = [src, dst]
+
+        for ip in ips:
+            if ip not in ip_country:
+                country_name = get_country_name(ip)
+                if country_name:
+                    ip_country[ip] = country_name
+                else:
+                    ip_country[ip] = UNKNOWN
+
+    return ip_country
+
 
 def get_ip_to_total_traffic_size(stream):
     """
@@ -87,7 +130,7 @@ def get_ip_to_total_traffic_size(stream):
         ip_traffic_size[dst] = ip_traffic_size[dst] + length if dst in ip_traffic_size else length
     return ip_traffic_size
 
-def aggregate_on_dns(ip_values, ip_fqdns):
+def aggregate_on_dns(ip_values, ip_fqdns, is_numeric=True):
     """
     Aggregates the values in ip_values based on domains accessed from
     ip_fqdns. Values from same ip_addresses same domain names are combines
@@ -97,16 +140,20 @@ def aggregate_on_dns(ip_values, ip_fqdns):
                                 host has already been removed from ip_values
         ip_fqdns (dictionary): maps ip address to fqdns
 
+        is_numeric (boolean): are the values numeric? If so, add the values,
+                              else create a list of values.
+
     Returns:
-        a dictionary mapping tld domains to the values in ip_values, aggregated.
+        a dictionary mapping tld domains to the values in ip_values,
+        aggregated as sums or as a list.
     """
-    # Coalesce fqdn packet counts using ip count dict
-    fqdn_domain_counts = {}
-    fqdn_domain_counts[UNKNOWN] = 0
+    # Coalesce fqdn packet counts using ip values dict
+    fqdn_domain_values = {}
+    fqdn_domain_values[UNKNOWN] = 0 if is_numeric else []
     fqdn_domain_aliases = {}
     fqdn_domain_aliases[UNKNOWN] = {UNKNOWN}
 
-    for ip, count in ip_values.items():
+    for ip, value in ip_values.items():
         fqdns = ip_fqdns.get(ip, None)
 
         if fqdns:
@@ -118,10 +165,16 @@ def aggregate_on_dns(ip_values, ip_fqdns):
             domain_set = list(domain_set)
             # Add domains to domain counts, only adding first entry if multiple
             domain = domain_set[0]
-            if domain in fqdn_domain_counts:
-                fqdn_domain_counts[domain] += count
+            if domain in fqdn_domain_values:
+                if is_numeric:
+                    fqdn_domain_values[domain] += value
+                else:
+                    fqdn_domain_values[domain].append(value)
             else:
-                fqdn_domain_counts[domain] = count
+                if is_numeric:
+                    fqdn_domain_values[domain] = value
+                else:
+                    fqdn_domain_values[domain] = [value]
 
             # Add aliases for domains
             for domain1 in domain_set:
@@ -138,16 +191,19 @@ def aggregate_on_dns(ip_values, ip_fqdns):
                         fqdn_domain_aliases[domain1].add(domain2)
 
         else:
-            fqdn_domain_counts[UNKNOWN] += 1
+            if is_numeric:
+                fqdn_domain_values[UNKNOWN] += value
+            else:
+                fqdn_domain_values[UNKNOWN].append(value)
 
     fqdn_alias_count = {}
-    for domain in fqdn_domain_counts:
+    for domain in fqdn_domain_values:
         alias_list = list(fqdn_domain_aliases[domain])
         alias_list.sort()
         alias_name = ", ".join(alias_list)
         if alias_name in fqdn_alias_count:
-            fqdn_alias_count[alias_name] += fqdn_domain_counts[domain]
+            fqdn_alias_count[alias_name] += fqdn_domain_values[domain]
         else:
-            fqdn_alias_count[alias_name] = fqdn_domain_counts[domain]
+            fqdn_alias_count[alias_name] = fqdn_domain_values[domain]
 
     return fqdn_alias_count

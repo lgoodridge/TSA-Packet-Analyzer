@@ -2,7 +2,7 @@
 # TSA libraries
 from capturer import p0f_proxy, wireshark_proxy
 from analyzer.country import get_country_to_packet_count, get_country_to_traffic_size
-from analyzer.dns import get_fqdn_to_packet_count, get_fqdn_to_traffic_size
+from analyzer.dns import get_tldn_to_packet_count, get_tldn_to_traffic_size, consolidate_fqdn_data
 from settings import get_setting
 
 # DASH ui libraries and plotly
@@ -22,6 +22,13 @@ from . import styles
 
 # Global variables
 state = {}
+
+COUNTRY_COUNTS = "country_counts"
+TLDN_COUNTS = "tldn_counts"
+COUNTRY_TRAFFIC = "country_traffic"
+TLDN_TRAFFIC = "tldn_traffic"
+TLDN_OVERALL_INFO = "tldn_overall_info"
+
 STATE_UPDATE_RATE = 5 # seconds
 
 app = dash.Dash()
@@ -42,7 +49,7 @@ def start_ui(live_capture=False):
     app.run_server(debug=get_setting('app', 'EnableDebugMode'))
 
 def updater():
-    sleep(0.5)
+    sleep(1)
     update_ui_state()
 
     # update state every UPDATE_RATE seconds
@@ -56,14 +63,16 @@ def update_ui_state():
     packets = wireshark_proxy.read_packets().get_packets()
 
     country_count_tups = list(get_country_to_packet_count(packets).items())
-    fqdn_count_tups = list(get_fqdn_to_packet_count(packets).items())
     country_traffic_tups = list(get_country_to_traffic_size(packets).items())
-    fqdn_traffic_tups = list(get_fqdn_to_traffic_size(packets).items())
+    tldn_count_tups = list(get_tldn_to_packet_count(packets).items())
+    tldn_traffic_tups = list(get_tldn_to_traffic_size(packets).items())
+    tldn_overall_info = list(consolidate_fqdn_data(packets).items())
 
-    state["country_counts"] = country_count_tups
-    state["fqdn_counts"] = fqdn_count_tups
-    state["country_traffic"] = country_traffic_tups
-    state["fqdn_traffic"] = fqdn_traffic_tups
+    state[COUNTRY_COUNTS] = country_count_tups
+    state[COUNTRY_TRAFFIC] = country_traffic_tups
+    state[TLDN_COUNTS] = tldn_count_tups
+    state[TLDN_TRAFFIC] = tldn_traffic_tups
+    state[TLDN_OVERALL_INFO] = tldn_overall_info
 
 def get_curr_state():
     return state
@@ -144,12 +153,26 @@ def update_country_traffic_statistics_map(n_clicks):
 
     return map_graphs
 
+# Update country traffic choropleth map
+@app.callback(Output('overview-table', 'figure'),
+              [Input('overview-table-radio', 'value')])
+def update_overview_table(radio_option):
+
+    figure = None
+    if radio_option == 'GNRL':
+        figure = layouts.get_general_table_figure()
+    elif radio_option == 'SCRTY':
+        figure = None
+
+    return figure
+
+
 # Update the page on url update
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def update_page(pathname):
-    if pathname == '/search':
-        return layouts.get_search_page()
+    if pathname == '/overview':
+        return layouts.get_overview_page()
     elif pathname == '/statistics':
         return layouts.get_statistics_page()
     elif pathname == '/maps':

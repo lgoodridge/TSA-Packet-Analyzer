@@ -35,7 +35,7 @@ def cleanup():
     if geoip_db_reader:
         geoip_db_reader = None
 
-def get_country(ip_addr):
+def get_country_name(ip_addr):
     """
     Takes in an ip address (string) and returns the
     country name (string) it maps to in the geoip db.

@@ -5,6 +5,10 @@ import plotly.graph_objs as go
 from . import tsa_ui
 from . import styles
 
+from analyzer.ip import PACKET_COUNT, TRAFFIC_SIZE, SECURITY_INFO, COUNTRY_NAMES
+DOMAIN_NAME = "Top Level Domain Name"
+
+
 POSSIBLE_CHOROPLETH_SCOPES = ["world", "usa", "europe", "asia", "africa", "north america", "south america"]
 UNKNOWN = 'Unknown'
 
@@ -24,7 +28,7 @@ def get_app_layout():
 
 def get_index_page():
     return html.Div([
-        dcc.Link('Search', href='/search', style=styles.LINK),
+        dcc.Link('Overview', href='/overview', style=styles.LINK),
         html.Br(),
         dcc.Link('Statistics', href='/statistics', style=styles.LINK),
         html.Br(),
@@ -36,14 +40,22 @@ def get_index_page():
     ])
 
 
-def get_search_page():
+def get_overview_page():
+
+    overview_with_radio = html.Div([
+        dcc.RadioItems(id='overview-table-radio',
+                       options=[
+                           {'label': 'General', 'value': 'GNRL'},
+                           {'label': 'Security', 'value': 'SCRTY'}
+                       ],
+                       value='GNRL'),
+        dcc.Graph(id='overview-table')
+    ])
+
     return html.Div([
-        html.H1('Search'),
+        html.H1('Overview'),
         dcc.Link('Back to Main', href='/', style=styles.LINK),
-        html.Div([
-            dcc.Input(id='input-domain-info-search', type='text', value='Domain Name'),
-            html.Button(id='domain-info-button', n_clicks=0, children='Go')
-        ])
+        overview_with_radio
     ])
 
 
@@ -108,7 +120,7 @@ def get_map_page():
 # Get a choropleth map figures based on current state
 def get_choropleth_map_figures():
 
-    country_traffic_tups = tsa_ui.get_curr_state().get("country_traffic", [])
+    country_traffic_tups = tsa_ui.get_curr_state().get(tsa_ui.COUNTRY_TRAFFIC, [])
     country_traffic_tups = [tup for tup in country_traffic_tups if tup[0] != UNKNOWN]
 
     locations = [tup[0] for tup in country_traffic_tups]
@@ -167,6 +179,41 @@ def get_choropleth_map_figure(locations, z, locationmode, scope="world"):
                          marker=marker, colorbar=colorbar, z=z, locationmode=locationmode)
 
     return go.Figure(data=[data], layout=layout)
+
+def get_general_table_figure():
+    header_names = [DOMAIN_NAME, TRAFFIC_SIZE, COUNTRY_NAMES, PACKET_COUNT]
+
+    overview_info_tups = tsa_ui.get_curr_state().get(tsa_ui.TLDN_OVERALL_INFO, [])
+
+    all_domain_names = []
+    all_traffic_sizes = []
+    all_country_names = []
+    all_packet_counts = []
+
+    for info_tup in overview_info_tups:
+        temp_country_names = info_tup[1].get(COUNTRY_NAMES, [])
+        names = ", ".join(set(temp_country_names))
+
+        all_domain_names.append(info_tup[0])
+        all_traffic_sizes.append(info_tup[1].get(TRAFFIC_SIZE, []))
+        all_country_names.append(names)
+        all_packet_counts.append(info_tup[1].get(PACKET_COUNT, []))
+
+    cell_values = [all_domain_names, all_traffic_sizes, all_country_names, all_packet_counts]
+
+    header = dict(values=header_names,
+                    fill=dict(color='#C2D4FF'),
+                    align="left")
+    cells = dict(values=cell_values,
+                   fill=dict(color='#F5F8FF'),
+                   align="left")
+
+    table_data = go.Table(
+        header=header,
+        cells=cells
+    )
+
+    return go.Figure(data=[table_data])
 
 
 class ChoroplethScopeException(Exception):
