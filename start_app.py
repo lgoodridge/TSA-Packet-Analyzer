@@ -5,6 +5,7 @@ Defines the entry point for the application.
 from capturer import geoip_proxy, p0f_proxy, wireshark_proxy
 from analyzer.country import get_country_to_packet_count
 from analyzer.dns import get_tldn_to_packet_count
+from analyzer.metrics import get_bandwidth
 from visualizer import tsa_ui
 
 from settings import get_setting
@@ -53,6 +54,11 @@ if __name__ == "__main__":
     print("\n")
     for fqdn, count in fqdn_counts.items():
         print("Domain Name: {}, Count: {}\n".format(fqdn, count))
+
+    bandwidth_time_tups = get_bandwidth(tsa_stream, buckets=10)
+    print("\nTime versus Bandwidth.\n")
+    for bt in bandwidth_time_tups:
+        print('{}, {}\n'.format(bt[0], bt[1]))
 
     # Start GUI
     tsa_ui.start_ui(live_capture=use_live_capture)

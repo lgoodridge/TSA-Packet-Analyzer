@@ -18,7 +18,7 @@ pyshark_capture = None
 
 # Deque that acts as a ring buffer for
 # the captured and parsed Wireshark packets
-packet_deque = collections.deque(maxlen=10000)
+packet_deque = collections.deque(maxlen=20000)
 
 # Background thread used to capture packets with
 background_thread = None

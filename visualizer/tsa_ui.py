@@ -3,6 +3,7 @@
 from capturer import p0f_proxy, wireshark_proxy
 from analyzer.country import get_country_to_packet_count, get_country_to_traffic_size
 from analyzer.dns import get_tldn_to_packet_count, get_tldn_to_traffic_size, consolidate_fqdn_data
+from analyzer.metrics import get_bandwidth
 from settings import get_setting
 
 # DASH ui libraries and plotly
@@ -28,8 +29,9 @@ TLDN_COUNTS = "tldn_counts"
 COUNTRY_TRAFFIC = "country_traffic"
 TLDN_TRAFFIC = "tldn_traffic"
 TLDN_OVERALL_INFO = "tldn_overall_info"
+BANDWIDTH = "bandwidth"
 
-STATE_UPDATE_RATE = 5 # seconds
+STATE_UPDATE_RATE = 10 # seconds
 
 app = dash.Dash()
 # suppress callback exceptions so that we can assign callbacks to
@@ -58,6 +60,7 @@ def updater():
         update_ui_state()
 
 def update_ui_state():
+
     global state
 
     packets = wireshark_proxy.read_packets().get_packets()
@@ -67,12 +70,14 @@ def update_ui_state():
     tldn_count_tups = list(get_tldn_to_packet_count(packets).items())
     tldn_traffic_tups = list(get_tldn_to_traffic_size(packets).items())
     tldn_overall_info = list(consolidate_fqdn_data(packets).items())
+    bandwidth_tups = get_bandwidth(packets, buckets=25)
 
     state[COUNTRY_COUNTS] = country_count_tups
     state[COUNTRY_TRAFFIC] = country_traffic_tups
     state[TLDN_COUNTS] = tldn_count_tups
     state[TLDN_TRAFFIC] = tldn_traffic_tups
     state[TLDN_OVERALL_INFO] = tldn_overall_info
+    state[BANDWIDTH] = bandwidth_tups
 
 def get_curr_state():
     return state
@@ -165,6 +170,12 @@ def update_overview_table(radio_option):
         figure = layouts.get_security_table_figure()
 
     return figure
+
+# Update country traffic choropleth map
+@app.callback(Output('bandwidth-plot', 'figure'),
+              [Input('bandwidth-plot-refresh-button', 'n_clicks')])
+def update_bandwidth_plot(n_clicks):
+    return layouts.get_bandwidth_plot_figure()
 
 
 # Update the page on url update

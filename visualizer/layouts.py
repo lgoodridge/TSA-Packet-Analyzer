@@ -98,9 +98,16 @@ def get_statistics_page():
 
 
 def get_metrics_page():
+
+    bandwith_plot = html.Div([
+        html.Button('Refresh', id='bandwidth-plot-refresh-button'),
+        dcc.Graph(id='bandwidth-plot', figure=get_bandwidth_plot_figure())
+    ])
+
     return html.Div([
         html.H1('Metrics'),
         dcc.Link('Back to Main', href='/', style=styles.LINK),
+        bandwith_plot
     ])
 
 
@@ -285,6 +292,21 @@ def get_security_table_figure():
 
     return go.Figure(data=[table_data])
 
+def get_bandwidth_plot_figure():
+    bandwidth_tups = tsa_ui.get_curr_state().get(tsa_ui.BANDWIDTH, [])
+
+    total_bandwidth_plot = go.Scatter(
+        x =[tup[0] for tup in bandwidth_tups],
+        y =[tup[1] for tup in bandwidth_tups],
+        mode='lines',
+        line=dict(color=('rgb(205, 100, 24)'))
+    )
+
+    layout = dict(title='Traffic Bandwidth with Time',
+                  xaxis=dict(title='Time'),
+                  yaxis=dict(title='Bytes'),)
+
+    return go.Figure(data=[total_bandwidth_plot], layout=layout)
 
 class ChoroplethScopeException(Exception):
     def __init__(self, message):
