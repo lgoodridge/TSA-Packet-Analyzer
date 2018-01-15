@@ -14,6 +14,9 @@ TRAFFIC_SIZE = "Traffic Size"
 SECURITY_INFO = "Security Info"
 COUNTRY_NAMES = "Country Names"
 
+# cache of ip to fqdns
+ip_fqdns_cache = {}
+
 def get_host_ip_addr(stream, ip_counts=None):
     """
     Returns the host IP address from a stream of packets,
@@ -47,13 +50,15 @@ def get_ip_to_packet_count(stream):
 
 def get_ip_to_fqdns(stream):
     """
-    Returns a dictionary relating IP addresses to a list
+    Returns a dictionary relating IP addresses to a set
     of all fully qualified domain names that use them in
     the provided stream.
 
     IP addresses contained in ignore_addrs are dropped
     from the returned dictionary.
     """
+    global ip_fqdns_cache
+
     ip_fqdns = {}
     for packet in stream:
         if packet.dns_resp_ip:
@@ -62,6 +67,24 @@ def get_ip_to_fqdns(stream):
                 ip_fqdns[resp_ip].update(packet.dns_query_names)
             else:
                 ip_fqdns[resp_ip] = set(packet.dns_query_names)
+
+    ips = []
+    for packet in stream:
+        src = packet.src_addr
+        dst = packet.dst_addr
+        ips.extend([src, dst])
+
+    ips = set(ips)
+
+    # update the cache with new info
+    for ip, fqdns in ip_fqdns.items():
+        ip_fqdns_cache[ip] = set(fqdns)
+
+    # use cache to add missing info to result
+    for ip in ips:
+        if ip not in ip_fqdns and ip in ip_fqdns_cache:
+            ip_fqdns[ip] = set(ip_fqdns_cache[ip])
+
     return ip_fqdns
 
 def get_ip_to_security_info(stream):

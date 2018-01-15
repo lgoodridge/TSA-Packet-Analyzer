@@ -89,16 +89,16 @@ def update_count_statistics_graph(radio_option):
     size_disp = 15
 
     if radio_option == 'CNTRY':
-        max_vals = state.get("country_counts", [])
+        max_vals = state.get(COUNTRY_COUNTS, [])
         statistics_type = 'Country'
     elif radio_option == 'FQDN':
-        max_vals = state.get("fqdn_counts", [])
+        max_vals = state.get(TLDN_COUNTS, [])
         statistics_type = 'Domain Name'
 
     max_vals.sort(key=lambda tup: tup[1], reverse=True)
     max_vals = max_vals[0:size_disp] if len(max_vals) > 10 else max_vals
 
-    labels = [item[0][0:40] for item in max_vals]
+    labels = [item[0][0:20] for item in max_vals]
     values = [item[1] for item in max_vals]
 
     data = go.Pie(labels=labels, values=values, text=statistics_type, hovertext=values)
@@ -118,16 +118,16 @@ def update_traffic_statistics_graph(radio_option):
     size_disp = 15
 
     if radio_option == 'CNTRY':
-        max_vals = state.get("country_traffic", [])
+        max_vals = state.get(COUNTRY_TRAFFIC, [])
         statistics_type = 'Country'
     elif radio_option == 'FQDN':
-        max_vals = state.get("fqdn_traffic", [])
+        max_vals = state.get(TLDN_TRAFFIC, [])
         statistics_type = 'Domain Name'
 
     max_vals.sort(key=lambda tup: tup[1], reverse=True)
     max_vals = max_vals[0:size_disp] if len(max_vals) > 10 else max_vals
 
-    labels = [item[0][0:40] for item in max_vals]
+    labels = [item[0][0:20] for item in max_vals]
     values = [item[1] for item in max_vals]
 
     data = go.Pie(labels=labels, values=values, text=statistics_type, hovertext=values)
