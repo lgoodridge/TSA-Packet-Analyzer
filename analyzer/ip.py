@@ -54,8 +54,6 @@ def get_ip_to_fqdns(stream):
     of all fully qualified domain names that use them in
     the provided stream.
 
-    IP addresses contained in ignore_addrs are dropped
-    from the returned dictionary.
     """
     global ip_fqdns_cache
 
@@ -92,6 +90,9 @@ def get_ip_to_security_info(stream):
     Returns a dictionary relating IP addresses to
     dictionaries containing security info gathered by p0f.
 
+    If an IP address doesn't have any security information it
+    is not included in the dictionary
+
     Each dictionary containing security info will have the following fields,
     with missing or undetermined fields having a value of None:
         os_name:  name of the OS host is using
@@ -110,7 +111,10 @@ def get_ip_to_security_info(stream):
         ips = [src, dst]
 
         for ip in ips:
-            ip_security[ip] = get_security_info(ip) if ip not in ip_security else ip_security[ip]
+            if ip not in ip_security:
+                security_info = get_security_info(ip)
+                if security_info:
+                    ip_security[ip] = security_info
 
     return ip_security
 

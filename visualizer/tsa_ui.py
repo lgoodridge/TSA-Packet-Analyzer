@@ -162,7 +162,7 @@ def update_overview_table(radio_option):
     if radio_option == 'GNRL':
         figure = layouts.get_general_table_figure()
     elif radio_option == 'SCRTY':
-        figure = None
+        figure = layouts.get_security_table_figure()
 
     return figure
 

@@ -8,6 +8,12 @@ from . import styles
 from analyzer.ip import PACKET_COUNT, TRAFFIC_SIZE, SECURITY_INFO, COUNTRY_NAMES
 DOMAIN_NAME = "Top Level Domain Name"
 
+OS_FULL_NAME = "os_full_name"
+APP_FULL_NAME = "app_full_name"
+SYSTEM_LANGUAGE = "language"
+LINK_TYPE = "link_type"
+NUM_HOPS = "num_hops"
+UPTIME = "uptime" #estimated uptime of the system in minutes
 
 POSSIBLE_CHOROPLETH_SCOPES = ["world", "usa", "europe", "asia", "africa", "north america", "south america"]
 UNKNOWN = 'Unknown'
@@ -62,23 +68,23 @@ def get_overview_page():
 def get_statistics_page():
 
     count_graph_with_radio = html.Div([
-        dcc.Graph(id='statistics-packet-counts-graph'),
         dcc.RadioItems(id='statistics-packet-counts-radio',
                        options=[
                            {'label': 'Countries', 'value': 'CNTRY'},
                            {'label': 'Domain Names', 'value': 'FQDN'}
                        ],
-                       value='CNTRY')
+                       value='CNTRY'),
+        dcc.Graph(id='statistics-packet-counts-graph')
     ], style=styles.FLOAT_LEFT_HALF_WIDTH)
 
     trafic_graph_with_radio = html.Div([
-        dcc.Graph(id='statistics-packet-traffic-graph'),
         dcc.RadioItems(id='statistics-packet-traffic-radio',
                        options=[
                            {'label': 'Countries', 'value': 'CNTRY'},
                            {'label': 'Domain Names', 'value': 'FQDN'}
                        ],
-                       value='CNTRY')
+                       value='CNTRY'),
+        dcc.Graph(id='statistics-packet-traffic-graph'),
     ], style=styles.FLOAT_LEFT_HALF_WIDTH)
 
     return html.Div([
@@ -200,6 +206,70 @@ def get_general_table_figure():
         all_packet_counts.append(info_tup[1].get(PACKET_COUNT, []))
 
     cell_values = [all_domain_names, all_traffic_sizes, all_country_names, all_packet_counts]
+
+    header = dict(values=header_names,
+                    fill=dict(color='#C2D4FF'),
+                    align="left")
+    cells = dict(values=cell_values,
+                   fill=dict(color='#F5F8FF'),
+                   align="left")
+
+    table_data = go.Table(
+        header=header,
+        cells=cells
+    )
+
+    return go.Figure(data=[table_data])
+
+def get_security_table_figure():
+    header_names = [DOMAIN_NAME, "OS Name", "HTTP Application Name",
+                    "System Language", "Link Type", "Distance (Number of Packet Hops)",
+                    "Estimated Up-Time (in minutes)"]
+
+    overview_info_tups = tsa_ui.get_curr_state().get(tsa_ui.TLDN_OVERALL_INFO, [])
+
+    all_domain_names = []
+    all_os_names = []
+    all_http_app_names = []
+    all_system_languages = []
+    all_link_types = []
+    all_num_hops = []
+    all_uptimes = []
+
+
+    cell_values = [all_domain_names, all_os_names, all_http_app_names, all_system_languages,
+                   all_link_types, all_num_hops, all_uptimes]
+    security_info_keys = [OS_FULL_NAME, APP_FULL_NAME, SYSTEM_LANGUAGE, LINK_TYPE, NUM_HOPS, UPTIME]
+
+    for info_tup in overview_info_tups:
+        all_domain_names.append(info_tup[0])
+
+        # get list of security dictionaries (or list of None) for this domain name
+        security_info_list = info_tup[1].get(SECURITY_INFO, None)
+
+        temp_security_info_dict = {}
+
+        # for each security info dict in the list
+        for info in security_info_list:
+            # if there is a dict
+            if info:
+                # for type of security info in dict
+                for key, value in info.items():
+                    # if it value not none
+                    if value:
+                        if key in temp_security_info_dict:
+                            temp_security_info_dict[key].add(value)
+                        else:
+                            temp_security_info_dict[key] = set([value])
+
+        for idx in range(len(cell_values[1:])):
+            key = security_info_keys[idx]
+            if key in temp_security_info_dict:
+                res = [str(item) for item in temp_security_info_dict.get(key)]
+                cell_values[idx+1].append(", ".join(res))
+            else:
+                cell_values[idx+1].append("")
+
 
     header = dict(values=header_names,
                     fill=dict(color='#C2D4FF'),

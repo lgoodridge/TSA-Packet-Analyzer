@@ -135,7 +135,7 @@ def consolidate_fqdn_data(stream):
         data = {}
         data[PACKET_COUNT] = tldn_packet_count[tldn]
         data[TRAFFIC_SIZE] = tldn_traffic_size[tldn]
-        data[SECURITY_INFO] = tldn_security_info[tldn]
+        data[SECURITY_INFO] = tldn_security_info.get(tldn, [])
         data[COUNTRY_NAMES] = tldn_country_names[tldn]
 
         tldn_data[tldn] = data
