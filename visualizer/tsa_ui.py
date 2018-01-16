@@ -3,7 +3,7 @@
 from capturer import p0f_proxy, wireshark_proxy
 from analyzer.country import get_country_to_packet_count, get_country_to_traffic_size
 from analyzer.dns import get_tldn_to_packet_count, get_tldn_to_traffic_size, consolidate_fqdn_data
-from analyzer.metrics import get_bandwidth
+from analyzer.metrics import get_bandwidth_traffic_volume, AVERAGE_BANDWIDTH, TRAFFIC_VOLUME_DATA, BANDWIDTH_DATA
 from settings import get_setting
 
 # DASH ui libraries and plotly
@@ -29,7 +29,6 @@ TLDN_COUNTS = "tldn_counts"
 COUNTRY_TRAFFIC = "country_traffic"
 TLDN_TRAFFIC = "tldn_traffic"
 TLDN_OVERALL_INFO = "tldn_overall_info"
-BANDWIDTH = "bandwidth"
 
 STATE_UPDATE_RATE = 10 # seconds
 
@@ -70,14 +69,19 @@ def update_ui_state():
     tldn_count_tups = list(get_tldn_to_packet_count(packets).items())
     tldn_traffic_tups = list(get_tldn_to_traffic_size(packets).items())
     tldn_overall_info = list(consolidate_fqdn_data(packets).items())
-    bandwidth_tups = get_bandwidth(packets, buckets=25)
+
+    get_traffic_info = get_bandwidth_traffic_volume(packets, buckets=25)
 
     state[COUNTRY_COUNTS] = country_count_tups
     state[COUNTRY_TRAFFIC] = country_traffic_tups
+
     state[TLDN_COUNTS] = tldn_count_tups
     state[TLDN_TRAFFIC] = tldn_traffic_tups
     state[TLDN_OVERALL_INFO] = tldn_overall_info
-    state[BANDWIDTH] = bandwidth_tups
+
+    state[BANDWIDTH_DATA] = get_traffic_info[BANDWIDTH_DATA]
+    state[AVERAGE_BANDWIDTH] = get_traffic_info[AVERAGE_BANDWIDTH]
+    state[TRAFFIC_VOLUME_DATA] = get_traffic_info[TRAFFIC_VOLUME_DATA]
 
 def get_curr_state():
     return state
@@ -171,11 +175,17 @@ def update_overview_table(radio_option):
 
     return figure
 
-# Update country traffic choropleth map
+# Update bandwidth plot
 @app.callback(Output('bandwidth-plot', 'figure'),
-              [Input('bandwidth-plot-refresh-button', 'n_clicks')])
+              [Input('metrics-plot-refresh-button', 'n_clicks')])
 def update_bandwidth_plot(n_clicks):
     return layouts.get_bandwidth_plot_figure()
+
+# Update traffic plot
+@app.callback(Output('traffic-plot', 'figure'),
+              [Input('metrics-plot-refresh-button', 'n_clicks')])
+def update_bandwidth_plot(n_clicks):
+    return layouts.get_traffic_plot_figure()
 
 
 # Update the page on url update

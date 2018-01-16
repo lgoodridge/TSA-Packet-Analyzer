@@ -100,14 +100,20 @@ def get_statistics_page():
 def get_metrics_page():
 
     bandwith_plot = html.Div([
-        html.Button('Refresh', id='bandwidth-plot-refresh-button'),
         dcc.Graph(id='bandwidth-plot', figure=get_bandwidth_plot_figure())
     ])
+
+    total_traffic_plot = html.Div([
+        dcc.Graph(id='traffic-plot', figure=get_traffic_plot_figure())
+    ])
+
 
     return html.Div([
         html.H1('Metrics'),
         dcc.Link('Back to Main', href='/', style=styles.LINK),
-        bandwith_plot
+        html.Button('Refresh', id='metrics-plot-refresh-button'),
+        bandwith_plot,
+        total_traffic_plot
     ])
 
 
@@ -293,7 +299,8 @@ def get_security_table_figure():
     return go.Figure(data=[table_data])
 
 def get_bandwidth_plot_figure():
-    bandwidth_tups = tsa_ui.get_curr_state().get(tsa_ui.BANDWIDTH, [])
+    bandwidth_tups = tsa_ui.get_curr_state().get(tsa_ui.BANDWIDTH_DATA, [])
+    average_bandwidth = tsa_ui.get_curr_state().get(tsa_ui.AVERAGE_BANDWIDTH, [])
 
     total_bandwidth_plot = go.Scatter(
         x =[tup[0] for tup in bandwidth_tups],
@@ -302,11 +309,36 @@ def get_bandwidth_plot_figure():
         line=dict(color=('rgb(205, 100, 24)'))
     )
 
-    layout = dict(title='Traffic Bandwidth with Time',
+    title = 'Traffic Bandwidth with Time. Average Bandwidth: ' \
+            '{} bits/s'.format(average_bandwidth)
+
+    layout = dict(title= title,
+                  xaxis=dict(title='Time'),
+                  yaxis=dict(title='bits/s'),)
+
+    return go.Figure(data=[total_bandwidth_plot], layout=layout)
+
+def get_traffic_plot_figure():
+    traffic_tups = tsa_ui.get_curr_state().get(tsa_ui.TRAFFIC_VOLUME_DATA, [])
+
+
+    step = 0
+    if len(traffic_tups) > 1:
+        step = traffic_tups[0][1] - traffic_tups[0][0]
+
+    total_traffic_plot = go.Scatter(
+        x=[tup[0] for tup in traffic_tups],
+        y=[tup[1] for tup in traffic_tups],
+        mode='lines',
+        line=dict(color=('rgb(100, 24, 205)'))
+    )
+
+    title = 'Total Traffic Transmitted with Time Step {}'.format(step)
+    layout = dict(title=title,
                   xaxis=dict(title='Time'),
                   yaxis=dict(title='Bytes'),)
 
-    return go.Figure(data=[total_bandwidth_plot], layout=layout)
+    return go.Figure(data=[total_traffic_plot], layout=layout)
 
 class ChoroplethScopeException(Exception):
     def __init__(self, message):
