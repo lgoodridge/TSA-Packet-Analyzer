@@ -2,6 +2,10 @@
 
 A packet analyzer for tracking geographic and security information.
 
+![World Map](https://s17.postimg.org/6ayb8jalb/world_plot.png)
+
+![Country Stats](https://s17.postimg.org/vtqnlt1xr/country_stats.png)
+
 ## Installation
 
 ### Windows
