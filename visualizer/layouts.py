@@ -324,7 +324,7 @@ def get_traffic_plot_figure():
 
     step = 0
     if len(traffic_tups) > 1:
-        step = traffic_tups[0][1] - traffic_tups[0][0]
+        step = traffic_tups[1][0] - traffic_tups[0][0]
 
     total_traffic_plot = go.Scatter(
         x=[tup[0] for tup in traffic_tups],
