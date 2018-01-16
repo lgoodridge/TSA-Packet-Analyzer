@@ -19,6 +19,9 @@ def get_bandwidth(stream, buckets=50):
     """
     time_length_dicts = [dict(time=packet.timestamp, length=packet.length) for packet in stream]
 
+    if len(time_length_dicts) == 0:
+        return []
+
     latest_time = max(time_length_dicts, key=lambda item:item['time'])['time']
     earliest_time = min(time_length_dicts, key=lambda item:item['time'])['time']
 
