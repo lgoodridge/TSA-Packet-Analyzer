@@ -41,8 +41,6 @@ def get_index_page():
         dcc.Link('Maps', href='/maps', style=styles.LINK),
         html.Br(),
         dcc.Link('Metrics', href='/metrics', style=styles.LINK),
-        html.Br(),
-        dcc.Link('Security', href='/security', style=styles.LINK),
     ])
 
 

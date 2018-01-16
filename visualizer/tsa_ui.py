@@ -110,7 +110,7 @@ def update_count_statistics_graph(radio_option):
     labels = [item[0][0:20] for item in max_vals]
     values = [item[1] for item in max_vals]
 
-    data = go.Pie(labels=labels, values=values, text=statistics_type, hovertext=values)
+    data = go.Pie(labels=labels, values=values, text=statistics_type)
 
     layout = go.Layout(
         title='Number of Packets by {} (Top {})'.format(statistics_type, size_disp),
@@ -139,7 +139,7 @@ def update_traffic_statistics_graph(radio_option):
     labels = [item[0][0:20] for item in max_vals]
     values = [item[1] for item in max_vals]
 
-    data = go.Pie(labels=labels, values=values, text=statistics_type, hovertext=values)
+    data = go.Pie(labels=labels, values=values, text=statistics_type)
 
     layout = go.Layout(
         title='Size of Traffic by {} (Top {})'.format(statistics_type, size_disp),
@@ -200,8 +200,6 @@ def update_page(pathname):
         return layouts.get_map_page()
     elif pathname == '/metrics':
         return layouts.get_metrics_page()
-    elif pathname == '/security':
-        return layouts.get_security_page()
     else:
         return layouts.get_index_page()
 
